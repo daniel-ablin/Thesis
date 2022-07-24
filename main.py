@@ -1,26 +1,36 @@
 import numpy as np
-from utils.func import iteration, calculate_derivative
+from utils.func import infected, calculate_derivative
 
-T = 100
-x0 = 0.001
-outer = {'beta': 0.05,
-         'd': np.array(([0.02, 0.03], [0.05, 0.04])),
+Recovered_rate = 0
+ReSusceptible_rate = 0
+
+T = 1000
+I0 = 0.01
+outer = {'beta': 0.3,
+         'd': np.array(([0.5, 0.5], [0.5, 0.5])),
          'lambda': np.array([5, 25])
          }
 
 
 groups = outer['d'].shape[0]
 
-x = np.zeros((T, groups))
+I = np.zeros((T, groups))
+if Recovered_rate > 0:
+    R = np.zeros((T, groups))
+    R[0, :] = 0
 dx = np.zeros(outer['d'].shape)
-x[0, :] = x0
-
+I[0, :] = I0
 v = np.array(outer['d']/5)
 
 for t in range(T-1):
-    x[t+1, :] = iteration(x[t, :], v, outer)
+    I[t+1, :] = infected(I[t, :], v, outer)
+    if Recovered_rate > 0:
+        R[t+1, :] = I[t, :] * Recovered_rate
+        I[t + 1, :] -= R[t+1, :]
+    if ReSusceptible_rate > 0:
+        I[t + 1, :] -= I[t, :] * ReSusceptible_rate
 
-dx = calculate_derivative(x, outer, groups)
+dI = calculate_derivative(I, outer, v, groups)
 
 
 

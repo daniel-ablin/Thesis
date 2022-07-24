@@ -1,22 +1,16 @@
 import numpy as np
 
 
-def iteration(x, v, outer):
-    new_x = np.zeros(x.shape)
-    for i in range(x.shape[0]):
-        for j in range(v.shape[0]):
-            new_x[i] = new_x[i] + outer['beta'] * (outer['d'][i, j] - v[i, j] - v[j, i]) * (1 - x[i]) * x[j]
+def infected(I, v, outer):
 
-    return x + new_x
+    new_I = (outer['beta'] * outer['d']*v*v.T * (1-I)*I.reshape((1, outer['d'].shape[0]))).sum(axis=1)
+
+    return I + new_I
 
 
-def calculate_derivative(x, outer, groups):
+def calculate_derivative(I, outer, v, groups):
 
-    dx = np.zeros(outer['d'].shape)
     diag = np.diag(np.ones(groups)) + np.ones(groups)
-    x_multi = (x.T @ x)
-    x_sum = x.sum(axis=0)
-    for i in range(groups):
-        for j in range(groups):
-            dx[i, j] = -outer['beta'] * (x_sum[i] * x_multi[i, j])
-    return dx * diag
+    x_multi = ((1 - I.T) @ I)
+    dI = outer['beta'] * outer['d'] * x_multi * v.T * diag
+    return dI

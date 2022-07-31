@@ -7,8 +7,11 @@ def infected(I, v, outer):
     return I + new_I
 
 
-def calculate_derivative(I, outer, v, groups):
-    diag = np.diag(np.ones(groups)) + np.ones(groups)
+def calculate_derivative(I, outer, v, groups, gov=False):
+    if gov:
+        diag = np.ones(groups) * 2
+    else:
+        diag = np.diag(np.ones(groups)) + np.ones(groups)
     x_multi = ((1 - I.T) @ I)
     dI = outer['beta'] * outer['d'] * x_multi * v.T * diag
     return dI

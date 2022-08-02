@@ -1,5 +1,5 @@
 import numpy as np
-from utils.func import infected, calculate_derivative, adam_optimizer_iteration
+from utils.func import infected, calculate_derivative, adam_optimizer_iteration, optimize
 from tqdm import tqdm
 from math import floor
 
@@ -28,6 +28,10 @@ counter = 0
 stop_itr = 50
 Threshold = 10 ** -6
 test = 10
+
+v, dTotalCost, TotalCost = optimize(T, I0, outer, gov=True, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
+                                    , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6
+                                    , seed=None)
 
 v = np.zeros((rng + 1, groups, groups))
 v_gov = np.zeros((rng + 1, groups, groups))

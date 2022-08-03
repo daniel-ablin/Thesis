@@ -38,7 +38,7 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
     v = np.zeros((max_itr + 1, groups, groups))
     TotalCost = np.zeros((max_itr, groups))
     dTotalCost = np.zeros((max_itr, groups, groups))
-    v[0] = rand_gen.random((groups, groups))
+    v[0] = rand_gen.random(1) if gov else rand_gen.random((groups, groups))
 
     pbar = tqdm(range(max_itr))
     for itr in pbar:
@@ -67,16 +67,13 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
         TotalCost[itr] = (outer['l'].reshape(groups, 1) * I[T - 1] + 1 / v[itr] - 1).sum(axis=1)
         # print(TotalCost)
         dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI + dCost
-        if gov:
-            grad = dTotalCost[itr].sum()
-        else:
-            grad = dTotalCost[itr]
+        grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
                                                 learning_rate / (1 + floor(itr / 1000)))
 
         if itr%stop_itr == 0:
             if (abs((dTotalCost[itr-stop_itr-1:itr-1].sum(axis=0) - dTotalCost[itr]*stop_itr)) < threshold).all():
-                if (abs(dTotalCost[itr]) < threshold).all():
+                if (abs(grad) < threshold).all():
                     print('found solution')
                     break
                 elif ((v[itr] == 1) * (dTotalCost[itr] < 0)).any() or ((v[itr] == 0) * (dTotalCost[itr] > 0)).any():

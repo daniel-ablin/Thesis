@@ -1,19 +1,10 @@
 import numpy as np
 from utils.func import infected, calculate_derivative, adam_optimizer_iteration, optimize
 import pandas as pd
-
-Recovered_rate = 0
-ReSusceptible_rate = 0
+from tqdm import tqdm
+from timeit import default_timer as timer
 
 learning_rate = 0.01
-T = 100
-I0 = 0.01
-outer = {'beta': 2.3/30,
-         'd': np.array(([0.7, 0.1], [0.1, 0.7])),
-         'l': np.array([5, 6]),
-         }
-
-groups = outer['d'].shape[0]
 
 rng = 10000
 epsilon = 10**-8
@@ -24,23 +15,34 @@ u, u_gov = 0, 0
 counter = 0
 stop_itr = 50
 Threshold = 10 ** -6
-test = 10
+seed = 65
+columns = ['T', 'I0', 'd', 'l', 'Recovered_rate', 'ReSusceptible_rate', 'sol', 'sol_gov', 'time']
+data = list()
+rnd = np.random.default_rng(seed)
+for itr in range(10):
+    start = timer()
+    T = rnd.integers(1, 10000)
+    I0 = (0.1 - epsilon) * rnd.random() + epsilon
+    temp = rnd.integers(1, 100)
+    outer = {'beta': 2.3/30,
+             'd': rnd.random((2, 2)),
+             'l': np.array([temp, temp * rnd.integers(1, 250)])
+             }
+    Recovered_rate = 0
+    ReSusceptible_rate = 0
 
-columns = ['protection_rate_11', 'protection_rate_12', 'protection_rate_21', 'protection_rate_22'
-           , 'Total_cost_dev11', 'Total_cost_dev12', 'Total_cost_dev21', 'Total_cost_dev22'
-           , 'Total_Cost_11', 'Total_Cost_12']
-values_lists = [[] for col in columns]
+    groups = outer['d'].shape[0]
 
-v, dTotalCost, TotalCost = optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
-                                    , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6
-                                    , only_finals=True, seed=None)
+    sol = optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
+                   , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=Threshold
+                   , only_finals=True, seed=seed)
 
-v_gov, dTotalCost_gov, TotalCost_gov = optimize(T, I0, outer, gov=True, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
-                                                , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6
-                                                , only_finals=True, seed=None)
+    sol_gov = optimize(T, I0, outer, gov=True, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
+                       , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=Threshold
+                       , only_finals=True, seed=seed)
 
-values = sum(sum([v.tolist(), dTotalCost.tolist(), [TotalCost.tolist()]], []), [])
-for ind, val in enumerate(values):
-    values_lists[ind].append(val)
-data = {}
+    end = timer()
+    data.append([T, I0, outer['d'], outer['l'], Recovered_rate, ReSusceptible_rate, sol, sol_gov, end - start])
+    print(itr)
+data = pd.DataFrame(data, columns=columns + [col + '_gov' for col in columns])
 print('stop')

@@ -30,7 +30,7 @@ def adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon, learning_
 
 
 def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
-             , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, seed=None):
+             , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, only_finals=False, seed=None):
     m = 0
     u = 0
     rand_gen = np.random.default_rng(seed)
@@ -85,5 +85,7 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
 
         pbar.set_postfix({"dv: ": dTotalCost[itr].sum(),
                           "Total_cost": TotalCost[itr].sum()})
-
-    return v[:itr], dTotalCost[:itr], TotalCost[:itr]
+    if only_finals:
+        return v[itr], dTotalCost[itr], TotalCost[itr]
+    else:
+        return v[:itr], dTotalCost[:itr], TotalCost[:itr]

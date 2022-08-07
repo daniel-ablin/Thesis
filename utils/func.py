@@ -43,7 +43,7 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
     dTotalCost = np.zeros((max_itr, groups, groups))
     v[0] = rand_gen.random(1) if gov else rand_gen.random((groups, groups))
 
-    msg = 'no close solution'
+    msg = 'time out'
     pbar = tqdm(range(max_itr), leave=leave)
     for itr in pbar:
         I = np.zeros((T, groups))
@@ -71,10 +71,12 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
         dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI + dCost
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
-                                                learning_rate / (1 + floor(itr / 500)))
-        if itr%1000 == 0 and itr != 0:
-            m = grad
-            u = grad**2
+                                                learning_rate)
+        decent = abs(decent) * np.sign(grad)
+        if itr%1000 == 0 and itr > 2000:
+            learning_rate /= 10
+            # beta_1 -= 0.1
+            # beta_2 -= 0.01
         if itr%stop_itr == 0:
             if (abs((dTotalCost[itr-stop_itr-1:itr-1].sum(axis=0) - dTotalCost[itr]*stop_itr)) < threshold).all():
                 if (abs(grad) < threshold).all():

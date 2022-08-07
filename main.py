@@ -21,12 +21,12 @@ data = list()
 rnd = np.random.default_rng(seed)
 for itr in range(10):
     start = timer()
-    T = rnd.integers(1, 10000)
+    T = rnd.integers(1, 1000)
     I0 = (0.1 - epsilon) * rnd.random() + epsilon
     temp = rnd.integers(1, 100)
     outer = {'beta': 2.3/30,
              'd': rnd.random((2, 2)),
-             'l': np.array([temp, temp * rnd.integers(1, 250)])
+             'l': np.array([temp, temp * rnd.integers(1, 50)])
              }
     Recovered_rate = 0
     ReSusceptible_rate = 0
@@ -44,5 +44,5 @@ for itr in range(10):
     end = timer()
     data.append([T, I0, outer['d'], outer['l'], Recovered_rate, ReSusceptible_rate, sol, sol_gov, end - start])
     print(itr)
-data = pd.DataFrame(data, columns=columns + [col + '_gov' for col in columns])
+data = pd.DataFrame(data, columns=columns)
 print('stop')

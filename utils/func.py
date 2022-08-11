@@ -32,7 +32,7 @@ def adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon, learning_
 
 def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
              , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, only_finals=False, seed=None
-             , leave=False):
+             , leave=True):
     m = 0
     u = 0
     itr2 = 0
@@ -71,10 +71,11 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
         dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI + dCost
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
-                                                learning_rate)
+                                                learning_rate / (floor(itr/1000) + 1))
         decent = abs(decent) * np.sign(grad)
         if itr%1000 == 0 and itr > 2000:
-            learning_rate /= 10
+            pass
+            #learning_rate /= 10
             # beta_1 -= 0.1
             # beta_2 -= 0.01
         if itr%stop_itr == 0:

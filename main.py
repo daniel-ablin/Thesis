@@ -5,9 +5,10 @@ from tqdm import tqdm
 from timeit import default_timer as timer
 from datetime import date
 
+
 today = date.today()
 
-learning_rate = 0.01
+learning_rate = 0.001
 
 rng = 10000
 epsilon = 10**-8
@@ -26,6 +27,7 @@ for itr in range(5000):
     print(f'\niteration: {itr}')
     start = timer()
     T = rnd.integers(1, 1000)
+    T = 300
     I0 = (0.1 - epsilon) * rnd.random() + epsilon
     temp = rnd.integers(1, 100)
     outer = {'beta': 2.3/30,

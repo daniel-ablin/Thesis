@@ -10,7 +10,7 @@ def infected(I, v, outer):
     return I + new_I
 
 
-def calculate_derivative(I, outer, v, groups, gov=False):
+def calculate_derivative_old(I, outer, v, groups, gov=False):
     if gov:
         diag = np.ones(groups) * 2
     else:
@@ -18,6 +18,92 @@ def calculate_derivative(I, outer, v, groups, gov=False):
     x_multi = ((1 - I.T) @ I)
     dI = outer['beta'] * outer['d'] * x_multi * v.T * diag
     return dI
+
+
+def derivative_test(dI, I, outer, v, groups, gov=False):
+    dI_p = dI.copy()
+    dI = dI.copy()
+    d = outer['d']
+    dI[0, 0, 0] = dI_p[0, 0, 0] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,0,0]*(1-I[0]) - I[1]*dI_p[0,0,0]) +
+                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,0,0]*(1-I[0]) - I[0]*dI_p[0,0,0]) +
+                                                   d[0,0]*v[0,0]*(I[0]*(1-I[0]))*2)
+
+    dI[0, 0, 1] = dI_p[0, 0, 1] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,0,1]*(1-I[0]) - I[1]*dI_p[0,0,1]) +
+                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,0,1]*(1-I[0]) - I[0]*dI_p[0,0,1]) +
+                                                   d[0,1]*v[1,0]*(I[1]*(1-I[0])))
+
+    dI[0, 1, 0] = dI_p[0, 1, 0] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,1,0]*(1-I[0]) - I[1]*dI_p[0,1,0]) +
+                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,1,0]*(1-I[0]) - I[0]*dI_p[0,1,0]) +
+                                                   d[0,1]*v[0,1]*(I[1]*(1-I[0])))
+
+    dI[0, 1, 1] = dI_p[0, 1, 1] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,1,1]*(1-I[0]) - I[1]*dI_p[0,1,1]) +
+                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,1,1]*(1-I[0]) - I[0]*dI_p[0,1,1])
+                                                   )
+    dI[1, 0, 0] = dI_p[1, 0, 0] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,0,0]*(1-I[1]) - I[0]*dI_p[1,0,0]) +
+                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,0,0]*(1-I[1]) - I[1]*dI_p[1,0,0])
+                                                   )
+
+    dI[1, 0, 1] = dI_p[1, 0, 1] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,0,1]*(1-I[1]) - I[0]*dI_p[1,0,1]) +
+                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,0,1]*(1-I[1]) - I[1]*dI_p[1,0,1]) +
+                                                   d[1,0]*v[1,0]*(I[0]*(1-I[1])))
+
+    dI[1, 1, 0] = dI_p[1, 1, 0] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,1,0]*(1-I[1]) - I[0]*dI_p[1,1,0]) +
+                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,1,0]*(1-I[1]) - I[1]*dI_p[1,1,0]) +
+                                                   d[1,0]*v[0,1]*(I[0]*(1-I[1])))
+
+    dI[1, 1, 1] = dI_p[1, 1, 1] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,1,1]*(1-I[1]) - I[0]*dI_p[1,1,1]) +
+                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,1,1]*(1-I[1]) - I[1]*dI_p[1,1,1]) +
+                                                   d[1,1]*v[1,1]*(I[1]*(1-I[1]))*2)
+
+    return dI
+
+
+def calculate_derivative(dI, I, outer, v, groups, gov=False):
+
+    def return_indx_and_diag(p, i, j, gov):
+        if i == p and j == p:
+            diag = 2
+            indx = p
+        elif i != p and j != p:
+            diag = 0
+            indx = 0
+        else:
+            diag = 1
+            indx = i if i != p else j
+        return diag, indx
+
+    if gov:
+        diag = np.ones(groups) * 2
+    else:
+        diag = np.diag(np.ones(groups)) + np.ones(groups)
+
+    new_dI = dI.copy()
+    if gov:
+        for p in range(groups):
+            new_dI[p] += outer['beta'] * (outer['d'][p, w] * v[p, w] * v[w, p] * (dI[w, i, j] * (1 - I[p]) -
+                                                                                    I[w] * (dI[p, i, j])))
+    else:
+        for p in range(groups):
+            for i in range(groups):
+                for j in range(groups):
+                    for w in range(groups):
+                        new_dI[p, i, j] += outer['beta']*(outer['d'][p, w]*v[p, w]*v[w, p]*(dI[w, i, j] * (1-I[p]) -
+                                                                                            I[w] * (dI[p, i, j])))
+                    diag, indx = return_indx_and_diag(p, i, j, gov)
+
+                    new_dI[p, i, j] += outer['beta']*outer['d'][p,indx]*v[j, i]*I[indx]*(1-I[p])*diag
+
+    '''
+    A = outer['beta'] * outer['d'] * v * v.T
+    B = dI
+    B = dI * (1 - I)
+    I_multi = ((1 - I.T) @ I)
+    dI_I_multi = ((1 - I.T) @ dI)
+    I_dI_multi = ((1 - dI.T) @ I)
+    v_multi = v * v.T
+    dI = dI + outer['beta'] * outer['d'] * v_multi * (dI_I_multi - I_dI_multi + I_multi) * diag
+    '''
+    return new_dI
 
 
 def adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon, learning_rate):
@@ -35,24 +121,26 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
              , leave=True):
     m = 0
     u = 0
-    itr2 = 0
     rand_gen = np.random.default_rng(seed)
     groups = outer['d'].shape[0]
     v = np.zeros((max_itr + 1, groups, groups))
     TotalCost = np.zeros((max_itr, groups))
     dTotalCost = np.zeros((max_itr, groups, groups))
     v[0] = rand_gen.random(1) if gov else rand_gen.random((groups, groups))
+    dI_agg = np.zeros((groups, groups))
 
     msg = 'time out'
     pbar = tqdm(range(max_itr), leave=leave)
     for itr in pbar:
+        dI = np.zeros(groups) if gov else np.zeros((groups, groups, groups))
+        dI_test = dI.copy()
         I = np.zeros((T, groups))
         if Recovered_rate > 0:
             R = np.zeros((T, groups))
             R[0, :] = 0
         I[0, :] = I0
 
-        for t in range(T - 1):
+        for t in range(T-1):
             I[t + 1, :] = infected(I[t, :], v[itr], outer)
             if Recovered_rate > 0:
                 R[t + 1, :] = I[t, :] * Recovered_rate
@@ -60,19 +148,39 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
             if ReSusceptible_rate > 0:
                 I[t + 1, :] -= I[t, :] * ReSusceptible_rate
 
-        # InfectoionCost = outer['l'].reshape(groups, 1) * I
-        dI = calculate_derivative(I, outer, v[itr], groups)
+            dI = calculate_derivative(dI, I[t], outer, v[itr], groups, gov=gov)
 
+            dI_test = derivative_test(dI_test, I[t], outer, v[itr], groups, gov=gov)
+
+        # InfectoionCost = outer['l'].reshape(groups, 1) * I
+        # dI = calculate_derivative(I, outer, v[itr], groups, gov=gov)
+        for i in range(groups):
+            dI_agg[i, :] = dI[i, i, :]
         # Cost = 1/v -1
+        '''
+        i = 0
+        j = 0
+        I_test = np.zeros((T, groups))
+        v_test = v[itr].copy()
+        v_test[i, j] += epsilon/100000
+
+        I_test[0, :] = I0
+        I_test2 = I_test.copy()
+        for t in range(T-1):
+            I_test[t + 1, :] = infected(I_test[t, :], v_test, outer)
+
+        dv_test = (I_test[T-1][i] - I[T-1][i])/(epsilon/100000)
+        print(dI[i,i,j], dv_test, dI[i,i,j]-dv_test)
+        '''
         dCost = -1 / v[itr] ** 2
         # [[ 9.471823    3.39994729], [52.37598457 23.10380243]]
         TotalCost[itr] = (outer['l'].reshape(groups, 1) * I[T - 1] + 1 / v[itr] - 1).sum(axis=1)
         # print(TotalCost)
-        dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI + dCost
+        dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI_agg + dCost
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
                                                 learning_rate / (floor(itr/1000) + 1))
-        decent = abs(decent) * np.sign(grad)
+        #decent = abs(decent) * np.sign(grad)
         if itr%1000 == 0 and itr > 2000:
             pass
             #learning_rate /= 10

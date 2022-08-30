@@ -80,8 +80,8 @@ def calculate_derivative(dI, I, outer, v, groups, gov=False):
     new_dI = dI.copy()
     if gov:
         for p in range(groups):
-            new_dI[p] += outer['beta'] * (outer['d'][p, w] * v[p, w] * v[w, p] * (dI[w, i, j] * (1 - I[p]) -
-                                                                                    I[w] * (dI[p, i, j])))
+            for i in range(groups):
+                new_dI[p] += outer['beta'] * outer['d'][p, i] * (v[p, i]**2 * (dI[i]*(1-I[p]) - I[i]*(dI[p]))+ 2*v[p, i]*(I[i] * (1-I[p])))
     else:
         for p in range(groups):
             for i in range(groups):
@@ -117,8 +117,8 @@ def adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon, learning_
 
 
 def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
-             , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, only_finals=False, seed=None
-             , leave=True):
+             , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, seed=None
+             , derv_test=False, solution_test=False):
     m = 0
     u = 0
     rand_gen = np.random.default_rng(seed)
@@ -130,18 +130,32 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
     dI_agg = np.zeros((groups, groups))
 
     msg = 'time out'
-    pbar = tqdm(range(max_itr), leave=leave)
+    pbar = tqdm(range(max_itr))
     for itr in pbar:
         dI = np.zeros(groups) if gov else np.zeros((groups, groups, groups))
-        dI_test = dI.copy()
         I = np.zeros((T, groups))
+        I[0, :] = I0
+
+        if derv_test or solution_test:
+            test_results = dict()
+            I_test = I[0, :].copy()
+            v_test = v[itr].copy()
+            main_player_test, sub_player_test = np.random.choice(groups, 2)
+            if gov:
+                v_test += epsilon
+            else:
+                v_test[main_player_test, sub_player_test] += epsilon
+        else:
+            test_results = None
+
         if Recovered_rate > 0:
             R = np.zeros((T, groups))
             R[0, :] = 0
-        I[0, :] = I0
 
         for t in range(T-1):
             I[t + 1, :] = infected(I[t, :], v[itr], outer)
+            if derv_test or solution_test:
+                I_test = infected(I_test, v_test, outer)
             if Recovered_rate > 0:
                 R[t + 1, :] = I[t, :] * Recovered_rate
                 I[t + 1, :] -= R[t + 1, :]
@@ -150,42 +164,27 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
 
             dI = calculate_derivative(dI, I[t], outer, v[itr], groups, gov=gov)
 
-            dI_test = derivative_test(dI_test, I[t], outer, v[itr], groups, gov=gov)
+        if gov:
+            dI_agg = dI
+        else:
+            for i in range(groups):
+                dI_agg[i, :] = dI[i, i, :]
 
-        # InfectoionCost = outer['l'].reshape(groups, 1) * I
-        # dI = calculate_derivative(I, outer, v[itr], groups, gov=gov)
-        for i in range(groups):
-            dI_agg[i, :] = dI[i, i, :]
-        # Cost = 1/v -1
-        '''
-        i = 0
-        j = 0
-        I_test = np.zeros((T, groups))
-        v_test = v[itr].copy()
-        v_test[i, j] += epsilon/100000
+        if derv_test:
+            dv_test = (I_test[main_player_test] - I[T - 1][main_player_test]) / (epsilon)
 
-        I_test[0, :] = I0
-        I_test2 = I_test.copy()
-        for t in range(T-1):
-            I_test[t + 1, :] = infected(I_test[t, :], v_test, outer)
+            derv = dI_agg[main_player_test] if gov else dI_agg[main_player_test]
 
-        dv_test = (I_test[T-1][i] - I[T-1][i])/(epsilon/100000)
-        print(dI[i,i,j], dv_test, dI[i,i,j]-dv_test)
-        '''
+            test_results['derv'] = (abs(derv - dv_test) < epsilon) and test_results.get('derv', True)
+
         dCost = -1 / v[itr] ** 2
-        # [[ 9.471823    3.39994729], [52.37598457 23.10380243]]
+
         TotalCost[itr] = (outer['l'].reshape(groups, 1) * I[T - 1] + 1 / v[itr] - 1).sum(axis=1)
-        # print(TotalCost)
         dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI_agg + dCost
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
-                                                learning_rate / (floor(itr/1000) + 1))
+                                                learning_rate) # / (floor(itr/1000) + 1))
         #decent = abs(decent) * np.sign(grad)
-        if itr%1000 == 0 and itr > 2000:
-            pass
-            #learning_rate /= 10
-            # beta_1 -= 0.1
-            # beta_2 -= 0.01
         if itr%stop_itr == 0:
             if (abs((dTotalCost[itr-stop_itr-1:itr-1].sum(axis=0) - dTotalCost[itr]*stop_itr)) < threshold).all():
                 if (abs(grad) < threshold).all():
@@ -200,7 +199,12 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
 
         pbar.set_postfix({"dv: ": dTotalCost[itr].sum(),
                           "Total_cost": TotalCost[itr].sum()})
-    if only_finals:
-        return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg}
-    else:
-        return v[:itr], dTotalCost[:itr], TotalCost[:itr], msg
+
+    if solution_test and msg=='found solution':
+        TotalCost_test = (outer['l'].reshape(groups, 1) * I_test + 1 / v_test - 1).sum(axis=1)
+
+        sol = (TotalCost[itr].sum() - TotalCost_test.sum()) if gov else (TotalCost[itr][main_player_test] - TotalCost_test[main_player_test])
+
+        test_results['solution'] = (abs(sol) < 0)
+
+    return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg, 'test_results': test_results}

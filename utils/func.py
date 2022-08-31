@@ -58,9 +58,9 @@ def derivative_test(dI, I, outer, v, groups, gov=False):
     return dI
 
 
-def calculate_derivative(dI, I, outer, v, groups, gov=False):
+def calculate_derivative(dI, I, outer, v, groups, gov=False, one_v_for_all=False):
 
-    def return_indx_and_diag(p, i, j, gov):
+    def return_indx_and_diag(p, i, j):
         if i == p and j == p:
             diag = 2
             indx = p
@@ -82,6 +82,16 @@ def calculate_derivative(dI, I, outer, v, groups, gov=False):
         for p in range(groups):
             for i in range(groups):
                 new_dI[p] += outer['beta'] * outer['d'][p, i] * (v[p, i]**2 * (dI[i]*(1-I[p]) - I[i]*(dI[p]))+ 2*v[p, i]*(I[i] * (1-I[p])))
+
+    elif one_v_for_all:
+        for p in range(groups):
+            for i in range(groups):
+                for j in range(groups):
+                    new_dI[p, i] += outer['beta']*(outer['d'][p,j]*v[p]*v[j]*(dI[j,i]*(1-I[p]) - I[j]*(dI[p,i])))
+
+                diag, indx = return_indx_and_diag(p, i, i)
+
+                new_dI[p, i] += outer['beta']*outer['d'][p,indx]*v[indx]*I[indx]*(1-I[p])*diag
     else:
         for p in range(groups):
             for i in range(groups):
@@ -89,9 +99,9 @@ def calculate_derivative(dI, I, outer, v, groups, gov=False):
                     for w in range(groups):
                         new_dI[p, i, j] += outer['beta']*(outer['d'][p, w]*v[p, w]*v[w, p]*(dI[w, i, j] * (1-I[p]) -
                                                                                             I[w] * (dI[p, i, j])))
-                    diag, indx = return_indx_and_diag(p, i, j, gov)
+                    diag, indx = return_indx_and_diag(p, i, j)
 
-                    new_dI[p, i, j] += outer['beta']*outer['d'][p,indx]*v[j, i]*I[indx]*(1-I[p])*diag
+                    new_dI[p, i, j] += outer['beta']*outer['d'][p,indx]*v[indx, p]*I[indx]*(1-I[p])*diag
 
     '''
     A = outer['beta'] * outer['d'] * v * v.T
@@ -173,9 +183,9 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
         if derv_test:
             dv_test = (I_test[main_player_test] - I[T - 1][main_player_test]) / (epsilon)
 
-            derv = dI_agg[main_player_test] if gov else dI_agg[main_player_test]
+            derv = dI_agg[main_player_test] if gov else dI_agg[main_player_test, sub_player_test]
 
-            test_results['derv'] = (abs(derv - dv_test) < epsilon) and test_results.get('derv', True)
+            test_results['derv'] = (abs(derv - dv_test) < epsilon*10) and test_results.get('derv', True)
 
         dCost = -1 / v[itr] ** 2
 
@@ -205,6 +215,6 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
 
         sol = (TotalCost[itr].sum() - TotalCost_test.sum()) if gov else (TotalCost[itr][main_player_test] - TotalCost_test[main_player_test])
 
-        test_results['solution'] = (abs(sol) < 0)
+        test_results['solution'] = (sol < 0)
 
     return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg, 'test_results': test_results}

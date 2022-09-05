@@ -38,7 +38,7 @@ for itr in range(100):
 
     groups = outer['d'].shape[0]
 
-    sol = optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
+    sol = optimize(T, I0, outer, one_v_for_all=True, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
                    , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=Threshold
                    , seed=seed, derv_test=True, solution_test=True)
 

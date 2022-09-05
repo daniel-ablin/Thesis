@@ -1,6 +1,8 @@
 import numpy as np
 from tqdm import tqdm
 from math import floor
+from utils.calculate_derevative import calculate_derivative
+from utils.utils import adam_optimizer_iteration
 
 
 def infected(I, v, outer):
@@ -10,139 +12,33 @@ def infected(I, v, outer):
     return I + new_I
 
 
-def calculate_derivative_old(I, outer, v, groups, gov=False):
-    if gov:
-        diag = np.ones(groups) * 2
+def init_params(max_itr, groups, gov, one_v_for_all, seed):
+    rand_gen = np.random.default_rng(seed)
+    if one_v_for_all:
+        v = np.zeros((max_itr + 1, groups, 1))
+        dTotalCost = np.zeros((max_itr, groups, 1))
     else:
-        diag = np.diag(np.ones(groups)) + np.ones(groups)
-    x_multi = ((1 - I.T) @ I)
-    dI = outer['beta'] * outer['d'] * x_multi * v.T * diag
-    return dI
+        v = np.zeros((max_itr + 1, groups, groups))
+        dTotalCost = np.zeros((max_itr, groups, groups))
+    TotalCost = np.zeros((max_itr, groups))
+    v[0] = rand_gen.random(1) if gov else rand_gen.random(v[0].shape)
+
+    return v, TotalCost, dTotalCost
 
 
-def derivative_test(dI, I, outer, v, groups, gov=False):
-    dI_p = dI.copy()
-    dI = dI.copy()
-    d = outer['d']
-    dI[0, 0, 0] = dI_p[0, 0, 0] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,0,0]*(1-I[0]) - I[1]*dI_p[0,0,0]) +
-                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,0,0]*(1-I[0]) - I[0]*dI_p[0,0,0]) +
-                                                   d[0,0]*v[0,0]*(I[0]*(1-I[0]))*2)
-
-    dI[0, 0, 1] = dI_p[0, 0, 1] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,0,1]*(1-I[0]) - I[1]*dI_p[0,0,1]) +
-                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,0,1]*(1-I[0]) - I[0]*dI_p[0,0,1]) +
-                                                   d[0,1]*v[1,0]*(I[1]*(1-I[0])))
-
-    dI[0, 1, 0] = dI_p[0, 1, 0] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,1,0]*(1-I[0]) - I[1]*dI_p[0,1,0]) +
-                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,1,0]*(1-I[0]) - I[0]*dI_p[0,1,0]) +
-                                                   d[0,1]*v[0,1]*(I[1]*(1-I[0])))
-
-    dI[0, 1, 1] = dI_p[0, 1, 1] + outer['beta'] * (d[0,1]*v[0,1]*v[1,0]*(dI_p[1,1,1]*(1-I[0]) - I[1]*dI_p[0,1,1]) +
-                                                   d[0,0]*v[0,0]*v[0,0]*(dI_p[0,1,1]*(1-I[0]) - I[0]*dI_p[0,1,1])
-                                                   )
-    dI[1, 0, 0] = dI_p[1, 0, 0] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,0,0]*(1-I[1]) - I[0]*dI_p[1,0,0]) +
-                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,0,0]*(1-I[1]) - I[1]*dI_p[1,0,0])
-                                                   )
-
-    dI[1, 0, 1] = dI_p[1, 0, 1] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,0,1]*(1-I[1]) - I[0]*dI_p[1,0,1]) +
-                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,0,1]*(1-I[1]) - I[1]*dI_p[1,0,1]) +
-                                                   d[1,0]*v[1,0]*(I[0]*(1-I[1])))
-
-    dI[1, 1, 0] = dI_p[1, 1, 0] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,1,0]*(1-I[1]) - I[0]*dI_p[1,1,0]) +
-                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,1,0]*(1-I[1]) - I[1]*dI_p[1,1,0]) +
-                                                   d[1,0]*v[0,1]*(I[0]*(1-I[1])))
-
-    dI[1, 1, 1] = dI_p[1, 1, 1] + outer['beta'] * (d[1,0]*v[0,1]*v[1,0]*(dI_p[0,1,1]*(1-I[1]) - I[0]*dI_p[1,1,1]) +
-                                                   d[1,1]*v[1,1]*v[1,1]*(dI_p[1,1,1]*(1-I[1]) - I[1]*dI_p[1,1,1]) +
-                                                   d[1,1]*v[1,1]*(I[1]*(1-I[1]))*2)
-
-    return dI
-
-
-def calculate_derivative(dI, I, outer, v, groups, gov=False, one_v_for_all=False):
-
-    def return_indx_and_diag(p, i, j):
-        if i == p and j == p:
-            diag = 2
-            indx = p
-        elif i != p and j != p:
-            diag = 0
-            indx = 0
-        else:
-            diag = 1
-            indx = i if i != p else j
-        return diag, indx
-
-    if gov:
-        diag = np.ones(groups) * 2
-    else:
-        diag = np.diag(np.ones(groups)) + np.ones(groups)
-
-    new_dI = dI.copy()
-    if gov:
-        for p in range(groups):
-            for i in range(groups):
-                new_dI[p] += outer['beta'] * outer['d'][p, i] * (v[p, i]**2 * (dI[i]*(1-I[p]) - I[i]*(dI[p]))+ 2*v[p, i]*(I[i] * (1-I[p])))
-
-    elif one_v_for_all:
-        for p in range(groups):
-            for i in range(groups):
-                for j in range(groups):
-                    new_dI[p, i] += outer['beta']*(outer['d'][p,j]*v[p]*v[j]*(dI[j,i]*(1-I[p]) - I[j]*(dI[p,i])))
-
-                diag, indx = return_indx_and_diag(p, i, i)
-
-                new_dI[p, i] += outer['beta']*outer['d'][p,indx]*v[indx]*I[indx]*(1-I[p])*diag
-    else:
-        for p in range(groups):
-            for i in range(groups):
-                for j in range(groups):
-                    for w in range(groups):
-                        new_dI[p, i, j] += outer['beta']*(outer['d'][p, w]*v[p, w]*v[w, p]*(dI[w, i, j] * (1-I[p]) -
-                                                                                            I[w] * (dI[p, i, j])))
-                    diag, indx = return_indx_and_diag(p, i, j)
-
-                    new_dI[p, i, j] += outer['beta']*outer['d'][p,indx]*v[indx, p]*I[indx]*(1-I[p])*diag
-
-    '''
-    A = outer['beta'] * outer['d'] * v * v.T
-    B = dI
-    B = dI * (1 - I)
-    I_multi = ((1 - I.T) @ I)
-    dI_I_multi = ((1 - I.T) @ dI)
-    I_dI_multi = ((1 - dI.T) @ I)
-    v_multi = v * v.T
-    dI = dI + outer['beta'] * outer['d'] * v_multi * (dI_I_multi - I_dI_multi + I_multi) * diag
-    '''
-    return new_dI
-
-
-def adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon, learning_rate):
-    m = beta_1 * m + (1 - beta_1) * grad
-    u = beta_2 * u + (1 - beta_2) * grad ** 2
-    m_hat = m / (1 - beta_1 ** (itr + 1))
-    u_hat = u / (1 - beta_2 ** (itr + 1))
-    adam = (learning_rate * m_hat) / (u_hat ** 0.5 + epsilon)
-
-    return adam, m, u
-
-
-def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
+def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
              , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, seed=None
              , derv_test=False, solution_test=False):
     m = 0
     u = 0
-    rand_gen = np.random.default_rng(seed)
     groups = outer['d'].shape[0]
-    v = np.zeros((max_itr + 1, groups, groups))
-    TotalCost = np.zeros((max_itr, groups))
-    dTotalCost = np.zeros((max_itr, groups, groups))
-    v[0] = rand_gen.random(1) if gov else rand_gen.random((groups, groups))
-    dI_agg = np.zeros((groups, groups))
+
+    v, TotalCost, dTotalCost = init_params(max_itr, groups, gov, one_v_for_all, seed)
 
     msg = 'time out'
     pbar = tqdm(range(max_itr))
     for itr in pbar:
-        dI = np.zeros(groups) if gov else np.zeros((groups, groups, groups))
+        dI = np.zeros(groups) if gov else np.zeros((groups, groups)) if one_v_for_all else np.zeros((groups, groups, groups))
         I = np.zeros((T, groups))
         I[0, :] = I0
 
@@ -153,6 +49,8 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
             main_player_test, sub_player_test = np.random.choice(groups, 2)
             if gov:
                 v_test += epsilon
+            elif one_v_for_all:
+                v_test[main_player_test] += epsilon
             else:
                 v_test[main_player_test, sub_player_test] += epsilon
         else:
@@ -172,18 +70,13 @@ def optimize(T, I0, outer, gov=False, learning_rate=.01, max_itr=10000, epsilon=
             if ReSusceptible_rate > 0:
                 I[t + 1, :] -= I[t, :] * ReSusceptible_rate
 
-            dI = calculate_derivative(dI, I[t], outer, v[itr], groups, gov=gov)
+            dI_agg, dI = calculate_derivative(dI, I[t], outer, v[itr], groups, gov=gov, one_v_for_all=one_v_for_all)
 
-        if gov:
-            dI_agg = dI
-        else:
-            for i in range(groups):
-                dI_agg[i, :] = dI[i, i, :]
 
         if derv_test:
             dv_test = (I_test[main_player_test] - I[T - 1][main_player_test]) / (epsilon)
 
-            derv = dI_agg[main_player_test] if gov else dI_agg[main_player_test, sub_player_test]
+            derv = dI_agg[main_player_test] if gov or one_v_for_all else dI_agg[main_player_test, sub_player_test]
 
             test_results['derv'] = (abs(derv - dv_test) < epsilon*10) and test_results.get('derv', True)
 

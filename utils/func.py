@@ -17,6 +17,9 @@ def init_params(max_itr, groups, gov, one_v_for_all, seed):
     if one_v_for_all:
         v = np.zeros((max_itr + 1, groups, 1))
         dTotalCost = np.zeros((max_itr, groups, 1))
+    elif gov:
+        v = np.zeros(max_itr+1)
+        dTotalCost = np.zeros((max_itr, groups, 1))
     else:
         v = np.zeros((max_itr + 1, groups, groups))
         dTotalCost = np.zeros((max_itr, groups, groups))
@@ -36,6 +39,7 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
     v, TotalCost, dTotalCost = init_params(max_itr, groups, gov, one_v_for_all, seed)
 
     msg = 'time out'
+    test_results = dict()
     pbar = tqdm(range(max_itr))
     for itr in pbar:
         dI = np.zeros(groups) if gov else np.zeros((groups, groups)) if one_v_for_all else np.zeros((groups, groups, groups))
@@ -43,16 +47,18 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         I[0, :] = I0
 
         if derv_test or solution_test or total_cost_test:
-            test_results = dict()
             I_test = I[0, :].copy()
             v_test = v[itr].copy()
             main_player_test, sub_player_test = np.random.choice(groups, 2)
             if gov:
                 v_test += epsilon
+                v_main = v_test
             elif one_v_for_all:
                 v_test[main_player_test] += epsilon
+                v_main = v_test[main_player_test]
             else:
                 v_test[main_player_test, sub_player_test] += epsilon
+                v_main = v_test[main_player_test, sub_player_test]
         else:
             test_results = None
 
@@ -85,12 +91,12 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         TotalCost[itr] = (outer['l'].reshape(groups, 1) * I[T - 1] + 1 / v[itr] - 1).sum(axis=1)
         dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI_agg + dCost
         if total_cost_test:
-            TotalCost_test = (outer['l'][main_player_test] * I_test[main_player_test] + 1 / v_test[main_player_test] - 1)
+            TotalCost_test = (outer['l'][main_player_test] * I_test[main_player_test] + 1 / v_main - 1)
             cost = TotalCost[itr][main_player_test] if gov or one_v_for_all else TotalCost[itr][main_player_test, sub_player_test]
             dTotalCost_test = (TotalCost_test - cost)/epsilon
             cost_derv = dTotalCost[itr][main_player_test] if gov or one_v_for_all else dTotalCost[itr][main_player_test, sub_player_test]
 
-            test_results['cost_derv'] = (abs(cost_derv - dTotalCost_test) < epsilon * 1000) and test_results.get('cost_derv', True)
+            test_results['cost_derv'] = (abs(cost_derv - dTotalCost_test) < epsilon * 2000) and test_results.get('cost_derv', True)
 
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,

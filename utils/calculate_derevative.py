@@ -7,7 +7,7 @@ def calculate_derivative(dI, I, outer, v, groups, gov=False, one_v_for_all=False
 
     elif gov:
         dI_new = calculate_derivative_for_gov(dI, I, outer, v, groups)
-        return dI_new, dI_new
+        return dI_new[:, np.newaxis], dI_new
 
     else:
         dI_new = calculate_derivative_for_v_for_each(dI, I, outer, v, groups)
@@ -90,7 +90,7 @@ def calculate_derivative_for_gov(dI, I, outer, v, groups):
 
     for p in range(groups):
         for i in range(groups):
-            new_dI[p] += outer['beta'] * outer['d'][p, i] * (v[p, i]**2 * (dI[i]*(1-I[p]) - I[i]*(dI[p]))+ 2*v[p, i]*(I[i] * (1-I[p])))
+            new_dI[p] += outer['beta'] * outer['d'][p, i] * (v**2 * (dI[i]*(1-I[p]) - I[i]*(dI[p])) + 2*v*(I[i] * (1-I[p])))
     return new_dI
 
 def derivative_test(dI, I, outer, v, groups, gov=False):

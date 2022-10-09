@@ -10,7 +10,8 @@ today = date.today()
 
 learning_rate = 0.001
 
-rng = 10000
+rng = 1000
+groups = 2
 epsilon = 10**-8
 beta_1 = 0.9
 beta_2 = 0.999
@@ -23,26 +24,26 @@ seed = 20
 columns = ['T', 'I0', 'd', 'l', 'Recovered_rate', 'ReSusceptible_rate', 'sol', 'sol_gov', 'time']
 data = list()
 rnd = np.random.default_rng(seed)
-for itr in range(100):
+for itr in range(rng):
     print(f'\niteration: {itr}')
     start = timer()
-    T = rnd.integers(1, 1000)
+    T = rnd.integers(2, 1000)
     I0 = (0.1 - epsilon) * rnd.random() + epsilon
-    temp = rnd.integers(1, 100)
+    temp = rnd.integers(0, 10)/groups
     outer = {'beta': 2.3/30,
-             'd': rnd.random((2, 2)),
-             'l': np.array([temp, temp * rnd.integers(1, 50)])
+             'd': rnd.random((groups, groups))/(groups**2),
+             'l': np.array([temp*(1+rnd.integers(0, 10)*(i != 0)) for i in range(groups)])
              }
     Recovered_rate = 0
     ReSusceptible_rate = 0
 
     groups = outer['d'].shape[0]
 
-    sol = optimize(T, I0, outer, one_v_for_all=True, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
+    sol = optimize(T, I0, outer, one_v_for_all=True, learning_rate=.01, max_itr=1000, epsilon=10**-8, beta_1=.9
                    , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=Threshold
                    , seed=seed, derv_test=True, solution_test=True, total_cost_test=True)
 
-    sol_gov = optimize(T, I0, outer, gov=True, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9
+    sol_gov = optimize(T, I0, outer, gov=True, learning_rate=.01, max_itr=1000, epsilon=10**-8, beta_1=.9
                        , beta_2=.999, Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=Threshold
                        , seed=seed, derv_test=True, solution_test=True, total_cost_test=True)
 

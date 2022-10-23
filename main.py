@@ -10,7 +10,7 @@ today = date.today()
 
 learning_rate = 0.001
 
-rng = 1000
+rng = 3000
 groups = 2
 epsilon = 10**-8
 beta_1 = 0.9
@@ -20,7 +20,7 @@ u, u_gov = 0, 0
 counter = 0
 stop_itr = 50
 Threshold = 10 ** -6
-seed = 20
+seed = 82
 columns = ['T', 'I0', 'd', 'l', 'Recovered_rate', 'ReSusceptible_rate', 'sol', 'sol_gov', 'time']
 data = list()
 rnd = np.random.default_rng(seed)
@@ -29,7 +29,7 @@ for itr in range(rng):
     start = timer()
     T = rnd.integers(2, 1000)
     I0 = (0.1 - epsilon) * rnd.random() + epsilon
-    temp = rnd.integers(0, 10)/groups
+    temp = rnd.integers(1, 10)/groups
     outer = {'beta': 2.3/30,
              'd': rnd.random((groups, groups))/(groups**2),
              'l': np.array([temp*(1+rnd.integers(0, 10)*(i != 0)) for i in range(groups)])

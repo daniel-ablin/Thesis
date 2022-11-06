@@ -114,7 +114,8 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         v[itr + 1] = np.minimum(np.maximum(v[itr + 1], epsilon), 1)
 
         pbar.set_postfix({"dv: ": dTotalCost[itr].sum(),
-                          "Total_cost": TotalCost[itr].sum()})
+                          "Total_cost": TotalCost[itr].sum(),
+                          "Type": gov})
 
     if solution_test and msg=='found solution':
         TotalCost_test = (outer['l'].reshape(groups, 1) * I_test + 1 / v_test - 1).sum(axis=1)

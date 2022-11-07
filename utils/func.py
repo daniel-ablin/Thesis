@@ -31,7 +31,7 @@ def init_params(max_itr, groups, gov, one_v_for_all, seed):
 
 def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
              , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, test_epsilon=10**-8, seed=None
-             , derv_test=False, solution_test=False, total_cost_test=False):
+             , derv_test=False, solution_test=False, total_cost_test=False, contagiousness=1):
     m = 0
     u = 0
     groups = outer['d'].shape[0]
@@ -85,7 +85,7 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
             test_results['derv'] = (abs(derv - dv_test) < 1) and test_results.get('derv', True)
 
-        dCost = -1 / v[itr] ** 2
+        dCost = -1 / (v[itr]*contagiousness) ** 2
 
         TotalCost[itr] = (outer['l'].reshape(groups, 1) * I[T - 1] + 1 / v[itr] - 1)
         dTotalCost[itr] = outer['l'].reshape(groups, 1) * dI_agg + dCost

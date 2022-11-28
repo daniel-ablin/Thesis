@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from math import floor
 from utils.calculate_derevative import calculate_derivative
@@ -12,8 +13,7 @@ def infected(I, S, v, outer):
     return new_I[:, np.newaxis]
 
 
-def init_params(max_itr, groups, gov, one_v_for_all, seed):
-    rand_gen = np.random.default_rng(seed)
+def init_params(max_itr, T, groups, gov, one_v_for_all):
     if one_v_for_all:
         v = np.zeros((max_itr + 1, groups, 1))
         dTotalCost = np.zeros((max_itr, groups, 1))
@@ -24,29 +24,37 @@ def init_params(max_itr, groups, gov, one_v_for_all, seed):
         v = np.zeros((max_itr + 1, groups, groups))
         dTotalCost = np.zeros((max_itr, groups, groups))
     TotalCost = np.zeros((max_itr, groups, 1))
-    v[0] = rand_gen.random(1) if gov else rand_gen.random(v[0].shape)
+    v[0] = 0.001 if gov else np.ones((v[0].shape))*0.001
 
-    return v, TotalCost, dTotalCost
+    dS = np.zeros((T, groups)) if gov else np.zeros((T, groups, groups)) if one_v_for_all else np.zeros(
+        (T, groups, groups, groups))
+    dI = dS.copy()
+
+    I = np.zeros((T, groups, 1))
+    S = I.copy()
+
+    return v, TotalCost, dTotalCost, dS, dI, I, S
 
 
-def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8, beta_1=.9, beta_2=.999
-             , Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, test_epsilon=10**-8, seed=None
-             , derv_test=False, solution_test=False, total_cost_test=False, filter_elasticity=1):
-    m = 0
-    u = 0
+def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8,
+             Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, test_epsilon=10**-8,
+             derv_test=False, solution_test=False, total_cost_test=False, filter_elasticity=1,
+             sec_smallest_def=False):
+    min_v = 1
     groups = outer['d'].shape[0]
 
-    v, TotalCost, dTotalCost = init_params(max_itr, groups, gov, one_v_for_all, seed)
+    v, TotalCost, dTotalCost, dS, dI, I, S = init_params(max_itr, T, groups, gov, one_v_for_all)
+
+    #learning_rate = np.repeat(learning_rate, groups)
 
     msg = 'time out'
     test_results = dict()
     pbar = tqdm(range(max_itr))
     for itr in pbar:
-        dS = np.zeros(groups) if gov else np.zeros((groups, groups)) if one_v_for_all else np.zeros((groups, groups, groups))
-        dI = dS.copy()
-        I = np.zeros((T, groups, 1))
+        dS[0, :] = 0
+        dI[0, :] = 0
         I[0, :] = I0
-        S = 1 - I
+        S[0, :] = 1 - I0
         if derv_test or solution_test or total_cost_test:
             I_test = I[0, :].copy()
             S_test = S[0, :].copy()
@@ -75,8 +83,8 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
             if ReSusceptible_rate > 0:
                 I[t + 1, :] -= I[t, :] * ReSusceptible_rate
 
-            dS_agg, dS, dI = calculate_derivative(dS, dI, I[t], S[t], Recovered_rate, outer, v[itr], groups, gov=gov,
-                                                  one_v_for_all=one_v_for_all)
+            dS_agg, dS[t+1], dI[t+1] = calculate_derivative(dS[t], dI[t], I[t], S[t], Recovered_rate, outer, v[itr], groups, gov=gov,
+                                                            one_v_for_all=one_v_for_all)
 
 
         if derv_test:
@@ -99,10 +107,12 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
             test_results['cost_derv'] = (abs(cost_derv - dTotalCost_test) < 100) and test_results.get('cost_derv', True)
 
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
-        decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
-                                                learning_rate) # / (floor(itr/1000) + 1))
-        #decent = abs(decent) * np.sign(grad)
+        #decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
+        #                                        learning_rate) # / (floor(itr/1000) + 1))
+        grad = grad*learning_rate
+        decent = np.minimum(abs(grad), 0.01) * np.sign(grad)
         if itr%stop_itr == 0:
+            learning_rate /= np.power(10, 1/(100/stop_itr))
             if (abs((dTotalCost[itr-stop_itr-1:itr-1].sum(axis=0) - dTotalCost[itr]*stop_itr)) < threshold).all():
                 if (abs(grad) < threshold).all():
                     msg = 'found solution'
@@ -111,10 +121,13 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
                     msg = 'no close solution'
                     break
 
-        v[itr + 1] = v[itr] - decent  # np.minimum(np.maximum(dTotalCost * learning_rate, -0.01), 0.01)
-        v[itr + 1] = np.minimum(np.maximum(v[itr + 1], epsilon), 1)
 
-        pbar.set_postfix({"dv: ": dTotalCost[itr].sum(),
+        v[itr + 1] = v[itr] - decent  # np.minimum(np.maximum(dTotalCost * learning_rate, -0.01), 0.01)
+        if sec_smallest_def:
+            min_v = np.partition(v[itr + 1].flatten(), 1)[1]
+        v[itr + 1] = np.minimum(np.maximum(v[itr + 1], epsilon), min_v)
+
+        pbar.set_postfix({"dv: ": grad.sum(),
                           "Total_cost": TotalCost[itr].sum(),
                           "Type": gov})
 
@@ -126,3 +139,17 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         test_results['solution'] = (sol < 0)
 
     return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg, 'test_results': test_results}
+
+
+def get_d_matrix(groups):
+    base_d = pd.read_csv('d_params.csv', header=None).to_numpy()
+    if isinstance(groups, list):
+        d_row_split = np.split(base_d, groups)
+        d_full_split = [np.split(row_split, groups, axis=1) for row_split in d_row_split]
+        d = np.array([[split.sum(axis=0).mean() for split in row_split] for row_split in d_full_split]).T
+    else:
+        d_row_split = np.array_split(base_d, groups)
+        d_full_split = [np.array_split(row_split, groups, axis=1) for row_split in d_row_split]
+        d = np.array([[split.sum(axis=0).mean() for split in row_split] for row_split in d_full_split]).T
+
+    return d

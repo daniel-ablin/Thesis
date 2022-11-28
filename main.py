@@ -1,5 +1,6 @@
 import numpy as np
-from utils.func import infected, calculate_derivative, adam_optimizer_iteration, optimize
+from utils.func import optimize, get_d_matrix
+from utils.func_v2 import optimize as opt2
 import pandas as pd
 from tqdm import tqdm
 from timeit import default_timer as timer
@@ -9,16 +10,15 @@ import itertools
 
 
 def run_model_random_search(itr):
-    rnd = np.random.default_rng(itr+2)
     # T = rnd.integers(2, 1000)
     # I0 = (0.1 - epsilon) * rnd.random() + epsilon
     # contagiousness = max(rnd.random(), epsilon)
-    temp = rnd.integers(1, 100) / groups
+    temp = np.random.randint(1, 1000, groups)
     outer = {'beta': 2.3 / 30,
              'd': d,
-             'l': np.array([temp * (1 + rnd.integers(0, 10) * (i != 0)) for i in range(groups)])
+             'l': np.cumsum(temp)
              }
-    Recovered_rate = 0 # 1 / 17
+    Recovered_rate = 1 / 17
     ReSusceptible_rate = 0
 
     print(itr)
@@ -40,31 +40,38 @@ def run_model_linear_search(itr):
 def run_optimizers(T, I0, outer, ReSusceptible_rate, Recovered_rate):
     start = timer()
 
-    sol = optimize(T, I0, outer, one_v_for_all=True, learning_rate=.01, max_itr=1000, epsilon=10 ** -8, beta_1=.9,
-                   beta_2=.999, Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
-                   threshold=Threshold, seed=seed, derv_test=True, solution_test=True, total_cost_test=True,
+    sol = optimize(T, I0, outer, one_v_for_all=True, learning_rate=learning_rate, max_itr=1000,
+                   Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
+                   derv_test=True, solution_test=True, total_cost_test=True,
                    filter_elasticity=filter_elasticity)
 
-    sol_gov = optimize(T, I0, outer, gov=True, learning_rate=.01, max_itr=1000, epsilon=10 ** -8, beta_1=.9,
-                       beta_2=.999, Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
-                       threshold=Threshold, seed=seed, derv_test=True, solution_test=True, total_cost_test=True,
+    sol_gov = optimize(T, I0, outer, gov=True, learning_rate=learning_rate, max_itr=1000,
+                       Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
+                       derv_test=True, solution_test=True, total_cost_test=True,
                        filter_elasticity=filter_elasticity)
+
+    sol_sec = optimize(T, I0, outer, one_v_for_all=True, learning_rate=learning_rate, max_itr=1000,
+                       Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
+                       derv_test=True, solution_test=True, total_cost_test=True,
+                       filter_elasticity=filter_elasticity, sec_smallest_def=True)
     end = timer()
-    return [T, I0, outer['d'], outer['l'], Recovered_rate, ReSusceptible_rate, filter_elasticity, sol, sol_gov, end - start]
+    return [T, I0, outer['d'], outer['l'], Recovered_rate, ReSusceptible_rate, filter_elasticity, sol, sol_gov, sol_sec,
+            end - start]
 
 
 iter_counter = 0
-learning_rate = 0.001
-rng = 300
-groups = 2
+learning_rate = 0.01
+rng = 400
 epsilon = 10**-8
 beta_1 = 0.9
 beta_2 = 0.999
-stop_itr = 50
+stop_itr = 35
 Threshold = 10 ** -6
 seed = 129
 rnd = np.random.default_rng(seed)
-d = np.array([[13.96027149, 2.876149293], [3.055542336, 2.004033465]])
+d = get_d_matrix([10]) # 2 players
+groups = 2
+#d = get_d_matrix(5)
 
 I0 = 1/10000
 T = int(1.5 * 365)
@@ -72,10 +79,11 @@ filter_elasticity = 1 / 8  # https://www.lonessmith.com/wp-content/uploads/2021/
 
 if __name__ == '__main__':
     today = date.today()
-    columns = ['T', 'I0', 'd', 'l', 'Recovered_rate', 'ReSusceptible_rate', 'contagiousness', 'sol', 'sol_gov', 'time']
+    columns = ['T', 'I0', 'd', 'l', 'Recovered_rate', 'ReSusceptible_rate', 'contagiousness', 'sol', 'sol_gov',
+               'sol_sec', 'time']
 
     rnd_search = True
-    run_model_random_search(2)
+    #run_model_random_search(2)
 
     with Pool() as pool:
         if rnd_search:

@@ -1,6 +1,5 @@
 import numpy as np
 from utils.func import optimize, get_d_matrix
-from utils.func_v2 import optimize as opt2
 import pandas as pd
 from tqdm import tqdm
 from timeit import default_timer as timer
@@ -61,7 +60,7 @@ def run_optimizers(T, I0, outer, ReSusceptible_rate, Recovered_rate):
 
 iter_counter = 0
 learning_rate = 0.01
-rng = 400
+rng = 401
 epsilon = 10**-8
 beta_1 = 0.9
 beta_2 = 0.999
@@ -71,11 +70,11 @@ seed = 129
 rnd = np.random.default_rng(seed)
 d = get_d_matrix([10]) # 2 players
 groups = 2
-#d = get_d_matrix(5)
+d = get_d_matrix(groups)
 
 I0 = 1/10000
 T = int(1.5 * 365)
-filter_elasticity = 1 / 8  # https://www.lonessmith.com/wp-content/uploads/2021/02/BSIR-nov.pdf page 7
+filter_elasticity = 1  # https://www.lonessmith.com/wp-content/uploads/2021/02/BSIR-nov.pdf page 7
 
 if __name__ == '__main__':
     today = date.today()
@@ -83,7 +82,7 @@ if __name__ == '__main__':
                'sol_sec', 'time']
 
     rnd_search = True
-    #run_model_random_search(2)
+    run_model_random_search(2)
 
     with Pool() as pool:
         if rnd_search:

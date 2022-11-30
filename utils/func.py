@@ -13,6 +13,19 @@ def infected(I, S, v, outer):
     return new_I[:, np.newaxis]
 
 
+def calc_total_cost(outer, groups, S, v, elasticity_adjust):
+    return (outer['l'].reshape(groups, 1) * (1 - S) + 1 / v ** elasticity_adjust - elasticity_adjust * v +
+            elasticity_adjust - 1)
+
+
+def calc_dtotal_cost(outer, groups, dS_agg, dCost):
+    return outer['l'].reshape(groups, 1) * -dS_agg + dCost
+
+
+def calc_dcost(v, elasticity_adjust):
+    return -elasticity_adjust / (v ** (elasticity_adjust + 1)) + elasticity_adjust
+
+
 def init_params(max_itr, T, groups, gov, one_v_for_all):
     if one_v_for_all:
         v = np.zeros((max_itr + 1, groups, 1))
@@ -36,6 +49,19 @@ def init_params(max_itr, T, groups, gov, one_v_for_all):
     return v, TotalCost, dTotalCost, dS, dI, I, S
 
 
+def calculate_dynamic(v, T, outer, I, S, dS, dI, Recovered_rate, groups, gov, one_v_for_all):
+    for t in range(T - 1):
+        infected_on_time_t = infected(I[t, :], S[t, :], v, outer)
+        I[t + 1, :] = np.clip(I[t, :] + infected_on_time_t - I[t, :] * Recovered_rate, 0, 1)
+        S[t + 1, :] = np.clip(S[t, :] - infected_on_time_t, 0, 1)
+
+        dS_agg, dS[t + 1], dI[t + 1] = calculate_derivative(dS[t], dI[t], I[t], S[t], Recovered_rate, outer, v,
+                                                            groups, gov=gov,
+                                                            one_v_for_all=one_v_for_all)
+
+        return S, I
+
+
 def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8,
              Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, test_epsilon=10**-8,
              derv_test=False, solution_test=False, total_cost_test=False, filter_elasticity=1,
@@ -46,7 +72,7 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
     v, TotalCost, dTotalCost, dS, dI, I, S = init_params(max_itr, T, groups, gov, one_v_for_all)
 
     #learning_rate = np.repeat(learning_rate, groups)
-
+    elasticity_adjust = 1/filter_elasticity
     msg = 'time out'
     test_results = dict()
     pbar = tqdm(range(max_itr))
@@ -74,8 +100,8 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
         for t in range(T-1):
             infcted_on_time_t = infected(I[t, :], S[t, :], v[itr], outer)
-            I[t + 1, :] = I[t, :] + infcted_on_time_t - I[t, :]*Recovered_rate
-            S[t + 1, :] = S[t, :] - infcted_on_time_t
+            I[t + 1, :] = np.clip(I[t, :] + infcted_on_time_t - I[t, :]*Recovered_rate, 0, 1)
+            S[t + 1, :] = np.clip(S[t, :] - infcted_on_time_t, 0, 1)
             if derv_test or solution_test or total_cost_test:
                 infcted_on_time_t_test = infected(I_test, S_test, v_test, outer)
                 I_test += infcted_on_time_t_test - I_test * Recovered_rate
@@ -94,12 +120,13 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
             test_results['derv'] = (abs(derv - dv_test) < 1) and test_results.get('derv', True)
 
-        dCost = -1 / (filter_elasticity*v[itr]) ** (filter_elasticity+1)
+        dCost = calc_dcost(v[itr], elasticity_adjust)
 
-        TotalCost[itr] = (outer['l'].reshape(groups, 1) * (1 - S[T - 1]) + 1 / v[itr] - 1)
-        dTotalCost[itr] = outer['l'].reshape(groups, 1) * -dS_agg + dCost
+        TotalCost[itr] = calc_total_cost(outer, groups, S[T - 1], v[itr], elasticity_adjust)
+        dTotalCost[itr] = calc_dtotal_cost(outer, groups, dS_agg, dCost)
         if total_cost_test:
-            TotalCost_test = (outer['l'][main_player_test] * (1-S_test[main_player_test]) + 1 / v_main - 1)
+            TotalCost_test = calc_total_cost(outer, groups, S_test, v_test, elasticity_adjust)[main_player_test]
+            #TotalCost_test = (outer['l'][main_player_test] * (1-S_test[main_player_test]) + 1 / v_main - 1)
             cost = TotalCost[itr][main_player_test] if gov or one_v_for_all else TotalCost[itr][main_player_test, sub_player_test]
             dTotalCost_test = abs(TotalCost_test - cost)/test_epsilon
             cost_derv = dTotalCost[itr][main_player_test] if gov or one_v_for_all else dTotalCost[itr][main_player_test, sub_player_test]
@@ -109,10 +136,10 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         #decent, m, u = adam_optimizer_iteration(grad, m, u, beta_1, beta_2, itr, epsilon,
         #                                        learning_rate) # / (floor(itr/1000) + 1))
-        grad = grad*learning_rate
-        decent = np.minimum(abs(grad), 0.01) * np.sign(grad)
+        decent = grad*learning_rate
+        decent = np.minimum(abs(decent), 0.01) * np.sign(decent)
         if itr%stop_itr == 0:
-            learning_rate /= np.power(10, 1/(100/stop_itr))
+            learning_rate /= np.power(2, 1/(100/stop_itr))
             if (abs((dTotalCost[itr-stop_itr-1:itr-1].sum(axis=0) - dTotalCost[itr]*stop_itr)) < threshold).all():
                 if (abs(grad) < threshold).all():
                     msg = 'found solution'
@@ -132,7 +159,8 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
                           "Type": gov})
 
     if solution_test and msg=='found solution':
-        TotalCost_test = (outer['l'].reshape(groups, 1) * (1 - S_test[main_player_test]) + 1 / v_test - 1).sum(axis=1)
+        TotalCost_test = calc_total_cost(outer, groups, S_test, v_test, elasticity_adjust)[main_player_test]
+        #TotalCost_test = (outer['l'].reshape(groups, 1) * (1 - S_test[main_player_test]) + 1 / v_test - 1).sum(axis=1)
 
         sol = (TotalCost[itr].sum() - TotalCost_test.sum()) if gov else (TotalCost[itr][main_player_test] - TotalCost_test[main_player_test])
 

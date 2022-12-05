@@ -69,7 +69,7 @@ Threshold = 10 ** -6
 seed = 129
 rnd = np.random.default_rng(seed)
 d = get_d_matrix([10]) # 2 players
-groups = 2
+groups = 5
 d = get_d_matrix(groups)
 
 I0 = 1/10000
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                'sol_sec', 'time']
 
     rnd_search = True
-    run_model_random_search(2)
+    #run_model_random_search(2)
 
     with Pool() as pool:
         if rnd_search:

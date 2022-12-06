@@ -14,7 +14,7 @@ def infected(I, S, v, outer):
 
 
 def calc_total_cost(outer, groups, S, v, elasticity_adjust):
-    return (outer['l'].reshape(groups, 1) * (1 - S) + 1 / v ** elasticity_adjust - elasticity_adjust * v +
+    return (outer['l'].reshape(groups, 1) * (1 - S) + 1 / v ** elasticity_adjust + elasticity_adjust * v -
             elasticity_adjust - 1)
 
 
@@ -28,7 +28,7 @@ def calc_dcost(v, elasticity_adjust):
 
 def calc_condition_for_learning_rate_adjust(dTotalCost, gov):
     if gov:
-        return (abs((dTotalCost[1:] - dTotalCost[:-1]).sum(axis=0) / dTotalCost[1:]).sum(axis=0)).T
+        return (abs((dTotalCost[1:] - dTotalCost[:-1]).sum(axis=0) / dTotalCost[1:]).sum(axis=0))
     else:
         return abs((dTotalCost[1:] - dTotalCost[:-1]) / dTotalCost[1:])
 
@@ -44,7 +44,7 @@ def init_params(max_itr, T, groups, gov, one_v_for_all):
         v = np.zeros((max_itr + 1, groups, groups))
         dTotalCost = np.zeros((max_itr, groups, groups))
     TotalCost = np.zeros((max_itr, groups, 1))
-    v[0] = 0.001 if gov else np.ones((v[0].shape))*0.001
+    v[0] = 1
 
     dS = np.zeros((T, groups)) if gov else np.zeros((T, groups, groups)) if one_v_for_all else np.zeros(
         (T, groups, groups, groups))
@@ -55,7 +55,8 @@ def init_params(max_itr, T, groups, gov, one_v_for_all):
     return v, TotalCost, dTotalCost, dS, dI, I, S
 
 
-def calculate_dynamic(v, T, outer, I, S, dS, dI, Recovered_rate, groups, gov, one_v_for_all, without_derivative=False):
+def calculate_dynamic(v, T, outer, I, S, dS, dI, Recovered_rate, groups=None, gov=None, one_v_for_all=None,
+                      without_derivative=False):
     dS_agg = 0
     for t in range(T - 1):
         infected_on_time_t = infected(I[t, :], S[t, :], v, outer)
@@ -70,9 +71,7 @@ def calculate_dynamic(v, T, outer, I, S, dS, dI, Recovered_rate, groups, gov, on
 
 
 def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8,
-             Recovered_rate=0, ReSusceptible_rate=0, stop_itr=50, threshold=10**-6, test_epsilon=10**-8,
-             derv_test=False, solution_test=False, total_cost_test=False, filter_elasticity=1,
-             sec_smallest_def=False):
+             Recovered_rate=0, stop_itr=50, threshold=10**-6, filter_elasticity=1, sec_smallest_def=False):
     min_v = epsilon
     groups = outer['d'].shape[0]
     counter = 0
@@ -109,9 +108,6 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         v[itr + 1] = np.minimum(np.maximum(v[itr + 1], min_v), 1)
 
         if not itr==0 and itr%stop_itr == 0:
-            #if (abs((dTotalCost[itr - 5:itr] - dTotalCost[itr - 6:itr - 1]) / dTotalCost[itr - 5:itr]) > 0.1).any():
-            #    learning_rate /= np.power(2, 1 / (100 / stop_itr))
-            #    counter = 0
             if (abs((dTotalCost[itr-stop_itr-1:itr-1].sum(axis=0) - dTotalCost[itr]*stop_itr)) < threshold).all():
                 if (abs(grad) < threshold).all():
                     msg = 'found solution'
@@ -122,13 +118,10 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
         if counter > 6:
             cond_nums = calc_condition_for_learning_rate_adjust(dTotalCost[itr-6:itr], gov)
-            cond1 = np.where((cond_nums > 0.5).any(axis=1), 2, 1)
-            cond2 = np.where((cond_nums < 0.05).all(axis=1), -0.1, 0)
+            cond1 = np.where((cond_nums > 0.5).any(axis=0), 2, 1)
+            cond2 = np.where((cond_nums < 0.05).all(axis=0), -0.1, 0)
             learning_rate /= cond1 + cond2
             counter = 0
-        #if counter > 10 and np.diff(sign[itr-10:itr:2], axis=1).sum() == 0 and ((sign[itr-9:itr:2] + sign[itr-10:itr:2])==0).all():
-        #    learning_rate /= 2
-        #    counter = 0
         else:
             counter += 1
 
@@ -136,18 +129,31 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
                           "Total_cost": TotalCost[itr].sum(),
                           "Type": gov,})
 
-    #if solution_test and msg=='found solution':
-    #    TotalCost_test = calc_total_cost(outer, groups, S_test, v_test, elasticity_adjust)[main_player_test]
+    solution_test=True
+    if solution_test and msg=='found solution':
+        v_test = v[itr].copy()
+        main_player = np.argmax(np.random.rand(*v_test.shape))
+        test_epsilon = 0.0001
+        v_test[main_player] += test_epsilon if v_test[main_player] <= 0.5 else -test_epsilon
+        I_test = I.copy()
+        S_test = S.copy()
+        I_test[0, :] = I0
+        S_test[0, :] = 1 - I0
+        S_test, I_test, _, _, _ = calculate_dynamic(v_test, T, outer, I_test, S_test, dS, dI, Recovered_rate, without_derivative=True)
+        TotalCost_test = calc_total_cost(outer, groups, S_test[T - 1], v_test, elasticity_adjust)
 
-    #    sol = (TotalCost[itr].sum() - TotalCost_test.sum()) if gov else (TotalCost[itr][main_player_test] - TotalCost_test[main_player_test])
+        sol = (TotalCost[itr].sum() - TotalCost_test.sum()) if gov else (TotalCost[itr] - TotalCost_test)[main_player]
 
-    #    test_results['solution'] = (sol < 0)
+        test_results['solution'] = (sol < 0).all()
 
-    return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg, 'test_results': test_results}
+    return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg, 'test_results': test_results,
+            'S': S[T-1]}
 
 
 def get_d_matrix(groups):
     base_d = pd.read_csv('d_params.csv', header=None).to_numpy()
+    if groups == 2:
+        groups = [10]
     if isinstance(groups, list):
         d_row_split = np.split(base_d, groups)
         d_full_split = [np.split(row_split, groups, axis=1) for row_split in d_row_split]

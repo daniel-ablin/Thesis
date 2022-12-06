@@ -12,16 +12,16 @@ def run_model_random_search(itr):
     # T = rnd.integers(2, 1000)
     # I0 = (0.1 - epsilon) * rnd.random() + epsilon
     # contagiousness = max(rnd.random(), epsilon)
-    temp = np.random.randint(1, 1000, groups)
+    temp = np.random.randint(1, 10000000, groups)
     outer = {'beta': 2.3 / 30,
              'd': d,
              'l': np.cumsum(temp)
              }
-    Recovered_rate = 1 / 17
+    Recovered_rate = 1 / 14
     ReSusceptible_rate = 0
 
     print(itr)
-    return run_optimizers(T, I0, outer, ReSusceptible_rate, Recovered_rate)
+    return run_optimizers(T, I0, outer, Recovered_rate)
 
 
 def run_model_linear_search(itr):
@@ -33,34 +33,30 @@ def run_model_linear_search(itr):
     Recovered_rate = 1 / 14
     ReSusceptible_rate = 1 / 60
 
-    return run_optimizers(T, I0, outer, ReSusceptible_rate, Recovered_rate)
+    return run_optimizers(T, I0, outer, Recovered_rate)
 
 
-def run_optimizers(T, I0, outer, ReSusceptible_rate, Recovered_rate):
+def run_optimizers(T, I0, outer, Recovered_rate):
     start = timer()
 
     sol = optimize(T, I0, outer, one_v_for_all=True, learning_rate=learning_rate, max_itr=1000,
-                   Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
-                   derv_test=True, solution_test=True, total_cost_test=True,
-                   filter_elasticity=filter_elasticity)
+                   Recovered_rate=Recovered_rate, stop_itr=50, filter_elasticity=filter_elasticity)
 
     sol_gov = optimize(T, I0, outer, gov=True, learning_rate=learning_rate, max_itr=1000,
-                       Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
-                       derv_test=True, solution_test=True, total_cost_test=True,
-                       filter_elasticity=filter_elasticity)
+                       Recovered_rate=Recovered_rate, stop_itr=50, filter_elasticity=filter_elasticity)
 
-    sol_sec = optimize(T, I0, outer, one_v_for_all=True, learning_rate=learning_rate, max_itr=1000,
-                       Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
-                       derv_test=True, solution_test=True, total_cost_test=True,
-                       filter_elasticity=filter_elasticity, sec_smallest_def=True)
+    #sol_sec = optimize(T, I0, outer, one_v_for_all=True, learning_rate=learning_rate, max_itr=1000,
+    #                   Recovered_rate=Recovered_rate, ReSusceptible_rate=ReSusceptible_rate, stop_itr=50,
+    #                   derv_test=True, solution_test=True, total_cost_test=True,
+    #                   filter_elasticity=filter_elasticity, sec_smallest_def=True)
     end = timer()
-    return [T, I0, outer['d'], outer['l'], Recovered_rate, ReSusceptible_rate, filter_elasticity, sol, sol_gov, sol_sec,
+    return [T, I0, outer['d'], outer['l'], Recovered_rate, filter_elasticity, sol, sol_gov,
             end - start]
 
 
 iter_counter = 0
 learning_rate = 0.01
-rng = 401
+rng = 500
 epsilon = 10**-8
 beta_1 = 0.9
 beta_2 = 0.999
@@ -68,13 +64,12 @@ stop_itr = 35
 Threshold = 10 ** -6
 seed = 129
 rnd = np.random.default_rng(seed)
-d = get_d_matrix([10]) # 2 players
-groups = 5
+groups = 2
 d = get_d_matrix(groups)
 
-I0 = 1/10000
+I0 = 1/1000000
 T = int(1.5 * 365)
-filter_elasticity = 1  # https://www.lonessmith.com/wp-content/uploads/2021/02/BSIR-nov.pdf page 7
+filter_elasticity = 1/8  # https://www.lonessmith.com/wp-content/uploads/2021/02/BSIR-nov.pdf page 7
 
 if __name__ == '__main__':
     today = date.today()
@@ -82,7 +77,7 @@ if __name__ == '__main__':
                'sol_sec', 'time']
 
     rnd_search = True
-    #run_model_random_search(2)
+    run_model_random_search(2)
 
     with Pool() as pool:
         if rnd_search:

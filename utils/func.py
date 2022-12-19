@@ -1,25 +1,28 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from numba import jit, njit
 from math import floor
 from utils.calculate_derevative import calculate_derivative
 from utils.utils import adam_optimizer_iteration
 
 
-def infected(I, S, v, outer):
-    new_I = (outer['beta'] * outer['d'] * v * v.T * S.reshape((outer['d'].shape[0], 1)) *
-             I.reshape((1, outer['d'].shape[0]))).sum(axis=1)
+#@njit
+def infected(I, S, v, beta, d):
+    new_I = (beta * d * v * v.T * S.reshape((d.shape[0], 1)) *
+             I.reshape((1, d.shape[0]))).sum(axis=1)
 
     return new_I[:, np.newaxis]
 
+const = 2
 
-def calc_total_cost(outer, groups, S, v, elasticity_adjust):
-    return (outer['l'].reshape(groups, 1) * (1 - S) + 1 / v ** elasticity_adjust + elasticity_adjust * v -
+def calc_total_cost(l, groups, S, v, elasticity_adjust):
+    return (-l.reshape(groups, 1) * const * np.log(S) + 1 / v ** elasticity_adjust + elasticity_adjust * v -
             elasticity_adjust - 1)
 
 
-def calc_dtotal_cost(outer, groups, dS_agg, dCost):
-    return outer['l'].reshape(groups, 1) * -dS_agg + dCost
+def calc_dtotal_cost(l, groups, dS_agg, S, dCost):
+    return l.reshape(groups, 1) * const * -dS_agg/np.maximum(S, 10**-8) + dCost
 
 
 def calc_dcost(v, elasticity_adjust):
@@ -28,7 +31,7 @@ def calc_dcost(v, elasticity_adjust):
 
 def calc_condition_for_learning_rate_adjust(dTotalCost, gov):
     if gov:
-        return (abs((dTotalCost[1:] - dTotalCost[:-1]).sum(axis=0) / dTotalCost[1:]).sum(axis=0))
+        return abs((dTotalCost[1:] - dTotalCost[:-1]).sum() / dTotalCost[1:]).mean()
     else:
         return abs((dTotalCost[1:] - dTotalCost[:-1]) / dTotalCost[1:])
 
@@ -55,29 +58,31 @@ def init_params(max_itr, T, groups, gov, one_v_for_all):
     return v, TotalCost, dTotalCost, dS, dI, I, S
 
 
-def calculate_dynamic(v, T, outer, I, S, dS, dI, Recovered_rate, groups=None, gov=None, one_v_for_all=None,
+#@njit
+def calculate_dynamic(v, T, beta, d, I, S, dS, dI, Recovered_rate, groups=None, gov=None, one_v_for_all=None,
                       without_derivative=False):
     dS_agg = 0
     for t in range(T - 1):
-        infected_on_time_t = infected(I[t, :], S[t, :], v, outer)
+        infected_on_time_t = infected(I[t, :], S[t, :], v, beta, d)
         I[t + 1, :] = np.clip(I[t, :] + infected_on_time_t - I[t, :] * Recovered_rate, 0, 1)
         S[t + 1, :] = np.clip(S[t, :] - infected_on_time_t, 0, 1)
         if not without_derivative:
-            dS_agg, dS[t + 1], dI[t + 1] = calculate_derivative(dS[t], dI[t], I[t], S[t], Recovered_rate, outer, v,
-                                                                groups, gov=gov,
-                                                                one_v_for_all=one_v_for_all)
+            dS_agg, dS[t + 1], dI[t + 1] = calculate_derivative(dS[t], dI[t], I[t], S[t], Recovered_rate, beta, d, v,
+                                                                groups, gov=gov, one_v_for_all=one_v_for_all)
 
     return S, I, dS_agg, dS, dI
 
 
 def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8,
              Recovered_rate=0, stop_itr=50, threshold=10**-6, filter_elasticity=1, sec_smallest_def=False):
+    d = outer['d']
+    l = outer['l']
+    beta = outer['beta']
     min_v = epsilon
-    groups = outer['d'].shape[0]
+    groups = d.shape[0]
     counter = 0
 
     v, TotalCost, dTotalCost, dS, dI, I, S = init_params(max_itr, T, groups, gov, one_v_for_all)
-
 
     elasticity_adjust = 1/filter_elasticity
     msg = 'time out'
@@ -89,12 +94,13 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         I[0, :] = I0
         S[0, :] = 1 - I0
 
-        S, I, dS_agg, dS, dI = calculate_dynamic(v[itr], T, outer, I, S, dS, dI, Recovered_rate, groups, gov, one_v_for_all)
+        S, I, dS_agg, dS, dI = calculate_dynamic(v[itr], T, beta, d, I, S, dS, dI, Recovered_rate, groups, gov
+                                                 , one_v_for_all)
 
         dCost = calc_dcost(v[itr], elasticity_adjust)
 
-        TotalCost[itr] = calc_total_cost(outer, groups, S[T - 1], v[itr], elasticity_adjust)
-        dTotalCost[itr] = calc_dtotal_cost(outer, groups, dS_agg, dCost)
+        TotalCost[itr] = calc_total_cost(l, groups, S[T - 1], v[itr], elasticity_adjust)
+        dTotalCost[itr] = calc_dtotal_cost(l, groups, dS_agg, S[T-1], dCost)
 
         grad = dTotalCost[itr].sum() if gov else dTotalCost[itr]
         decent = grad*learning_rate
@@ -127,20 +133,23 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
         pbar.set_postfix({"dv: ": grad.sum(),
                           "Total_cost": TotalCost[itr].sum(),
-                          "Type": gov,})
+                          "Type": gov})
 
     solution_test=True
     if solution_test and msg=='found solution':
         v_test = v[itr].copy()
         main_player = np.argmax(np.random.rand(*v_test.shape))
-        test_epsilon = 0.0001
-        v_test[main_player] += test_epsilon if v_test[main_player] <= 0.5 else -test_epsilon
+        test_epsilon = epsilon*100
+        if gov:
+            v_test += test_epsilon if v_test <= 0.5 else -test_epsilon
+        else:
+            v_test[main_player] += test_epsilon if v_test[main_player] <= 0.5 else -test_epsilon
         I_test = I.copy()
         S_test = S.copy()
         I_test[0, :] = I0
         S_test[0, :] = 1 - I0
-        S_test, I_test, _, _, _ = calculate_dynamic(v_test, T, outer, I_test, S_test, dS, dI, Recovered_rate, without_derivative=True)
-        TotalCost_test = calc_total_cost(outer, groups, S_test[T - 1], v_test, elasticity_adjust)
+        S_test, I_test, _, _, _ = calculate_dynamic(v_test, T, beta, d, I_test, S_test, dS, dI, Recovered_rate, without_derivative=True)
+        TotalCost_test = calc_total_cost(l, groups, S_test[T - 1], v_test, elasticity_adjust)
 
         sol = (TotalCost[itr].sum() - TotalCost_test.sum()) if gov else (TotalCost[itr] - TotalCost_test)[main_player]
 

@@ -14,15 +14,15 @@ def infected(I, S, v, beta, d):
 
     return new_I[:, np.newaxis]
 
-const = 2
+const = -4
 
 def calc_total_cost(l, groups, S, v, elasticity_adjust):
-    return (-l.reshape(groups, 1) * const * np.log(S) + 1 / v ** elasticity_adjust + elasticity_adjust * v -
+    return (l.reshape(groups, 1) * S**const + 1 / v ** elasticity_adjust + elasticity_adjust * v -
             elasticity_adjust - 1)
 
 
 def calc_dtotal_cost(l, groups, dS_agg, S, dCost):
-    return l.reshape(groups, 1) * const * -dS_agg/np.maximum(S, 10**-8) + dCost
+    return l.reshape(groups, 1) * const * dS_agg * S**(const-1) + dCost
 
 
 def calc_dcost(v, elasticity_adjust):

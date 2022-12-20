@@ -11,7 +11,7 @@ def run_model_random_search(itr):
     max = 0.3
     temp = (np.random.rand(groups)*(max-epsilon) + epsilon)
     temp = temp.cumsum()
-    temp = np.multiply(temp, np.arange(1, groups*10, 10))
+    temp = np.multiply(temp, np.arange(1, groups*10, 10))*0.05
     outer = {'beta': 2.3 / 30,
              'd': d,
              'l': temp # np.cumsum(temp)
@@ -55,7 +55,7 @@ def run_optimizers(T, I0, outer, Recovered_rate):
 
 iter_counter = 0
 learning_rate = 0.01
-rng = 100
+rng = 50
 epsilon = 10**-8
 beta_1 = 0.9
 beta_2 = 0.999

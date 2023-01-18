@@ -5,6 +5,7 @@ from numba import jit, njit
 from math import floor
 from utils.calculate_derevative import calculate_derivative
 from utils.utils import adam_optimizer_iteration
+from optimizer_init_params import *
 
 
 #@njit
@@ -36,28 +37,6 @@ def calc_condition_for_learning_rate_adjust(dTotalCost, gov):
         return abs((dTotalCost[1:] - dTotalCost[:-1]) / dTotalCost[1:])
 
 
-def init_params(max_itr, T, groups, gov, one_v_for_all):
-    if one_v_for_all:
-        v = np.zeros((max_itr + 1, groups, 1))
-        dTotalCost = np.zeros((max_itr, groups, 1))
-    elif gov:
-        v = np.zeros(max_itr+1)
-        dTotalCost = np.zeros((max_itr, groups, 1))
-    else:
-        v = np.zeros((max_itr + 1, groups, groups))
-        dTotalCost = np.zeros((max_itr, groups, groups))
-    TotalCost = np.zeros((max_itr, groups, 1))
-    v[0] = 1
-
-    dS = np.zeros((T, groups)) if gov else np.zeros((T, groups, groups)) if one_v_for_all else np.zeros(
-        (T, groups, groups, groups))
-    dI = dS.copy()
-
-    I = np.zeros((T, groups, 1))
-    S = I.copy()
-    return v, TotalCost, dTotalCost, dS, dI, I, S
-
-
 #@njit
 def calculate_dynamic(v, T, beta, d, I, S, dS, dI, Recovered_rate, groups=None, gov=None, one_v_for_all=None,
                       without_derivative=False):
@@ -85,6 +64,21 @@ def update_v(v, grad, learning_rate, sec_smallest_def, min_v):
     v_new = np.minimum(np.maximum(v_new, min_v), 1)
 
     return v_new
+
+class Optimizer:
+    def __init__(self, I0, learning_rate):
+        self.I0 = I0
+        self.lerning_rate = learning_rate
+
+class GovOptimizer:
+    def __init__(self, T, I0, outer, learning_rate=.01, max_itr=10000, epsilon=10**-8,
+             Recovered_rate=0, stop_itr=50, threshold=10**-6, sec_smallest_def=False):
+        self.outer_params = outer
+        self.endo_params = InitGovParams().init_endo_params(max_itr, T, outer.groups)
+
+    def optimize(self):
+
+
 
 
 def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8,
@@ -170,7 +164,6 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
 def get_d_matrix(groups):
     base_d = pd.read_csv('d_params.csv', header=None).to_numpy()
-    base_d = base_d / base_d.sum(axis=0)
     if groups == 2:
         groups = [10]
     if isinstance(groups, list):

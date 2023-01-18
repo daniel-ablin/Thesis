@@ -7,11 +7,21 @@ from multiprocessing import Pool
 import itertools
 
 
+class Outer:
+    def __init__(self, beta, d, l, filter_elasticity):
+        self.beta = beta
+        self.d = d
+        self.l = l
+        self.groups = d.shape[0]
+        self.elasticity_adjust = 1 / filter_elasticity
+        self.msg = 'time_out'
+
+
 def run_model_random_search(itr):
     max = 0.3
     temp = (np.random.rand(groups)*(max-epsilon) + epsilon)
     temp = temp.cumsum()
-    norm = groups*0 + 1 #100
+    norm = groups*0 + 2
     temp = np.multiply(temp, np.arange(1, groups*norm + 1, norm))
     #temp = np.multiply(temp, np.exp(np.arange(1, groups * norm, norm)))
     outer = {'beta': 2.3 / 30,
@@ -57,7 +67,7 @@ def run_optimizers(T, I0, outer, Recovered_rate):
 
 iter_counter = 0
 learning_rate = 0.01
-rng = 25
+rng = 50
 epsilon = 10**-8
 beta_1 = 0.9
 beta_2 = 0.999
@@ -78,7 +88,7 @@ if __name__ == '__main__':
                'sol_sec', 'time']
 
     rnd_search = True
-    #run_model_random_search(2)
+    run_model_random_search(2)
 
     with Pool(processes=10) as pool:
         if rnd_search:

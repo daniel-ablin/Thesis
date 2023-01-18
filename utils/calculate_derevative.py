@@ -7,11 +7,11 @@ from itertools import product
 def calculate_derivative(dS, dI, I, S, Recovered_rate, beta, d, v, groups, gov=False, one_v_for_all=False):
     if one_v_for_all:
         dS_new, dI_new = calculate_derivative_for_v_for_all(dS, dI, I, S, Recovered_rate, beta, d, v, groups)
-        return np.diag(dS_new)[:, np.newaxis],  dS_new, dI_new
+        return np.expand_dims(np.diag(dS_new), -1),  dS_new, dI_new
 
     elif gov:
         dS_new, dI_new = calculate_derivative_for_gov(dS, dI, I, S, Recovered_rate, beta, d, v, groups)
-        return dS_new[:, np.newaxis], dS_new, dI_new
+        return np.expand_dims(dS_new,  -1), dS_new, dI_new
 
     else:
         dS_new, dI_new = calculate_derivative_for_v_for_each(dS, dI, I, S, Recovered_rate, beta, d, v, groups)
@@ -47,11 +47,11 @@ def calculate_derivative_for_v_for_each(dS, dI, I, S, Recovered_rate, beta, d, v
             for j in range(groups):
                 for w in range(groups):
                     derivative_delta[p, i, j] += beta*(d[p, w]*v[p, w]*v[w, p] *
-                                                       (dI[w, i, j]*S[p] + I[w]*dS[p, i, j]))
+                                                       (dI[w, i, j]*S[p] + I[w]*dS[p, i, j]))[0]
                 diag = (i == p) + (j == p)
                 indx = i if i != p else j
 
-                derivative_delta[p, i, j] += beta*d[p,indx]*v[indx, p]*I[indx]*(S[p])*diag
+                derivative_delta[p, i, j] += beta*d[p,indx]*v[indx, p]*I[indx]*(S[p])*diag[0]
 
     return new_dS - derivative_delta, new_dI + derivative_delta - new_dI*Recovered_rate
 
@@ -75,31 +75,12 @@ def calculate_derivative_for_v_for_all(dS, dI, I, S, Recovered_rate, beta, d, v,
     new_dI = dI.copy()
     derivative_delta = np.zeros(dS.shape)
 
-    '''def calc_diag(p, i, w):
-        if p == i and p == w:
-            return 2, p
-        elif p != i and i != w:
-            return 0, 0
-        elif p == i and p != w:
-            return 1, w
-        else:
-            return 1, p'''
-
     for p in range(groups):
         for i in range(groups):
             for w in range(groups):
-                '''
-                if p == i and p == w:
-                    diag, indx = 2, p
-                elif p != i and i != w:
-                    diag, indx = 0, 0
-                elif p == i and p != w:
-                    diag, indx = 1, w
-                else:
-                    diag, indx = 1, p'''
                 diag, indx = calc_diag(p, i, w)
                 derivative_delta[p, i] += beta*d[p,w]*(v[p]*v[w]*(dI[w,i]*S[p] + I[w]*dS[p,i]) +
-                                                       v[indx]*I[w]*S[p]*diag)
+                                                       v[indx]*I[w]*S[p]*diag)[0]
 
     return new_dS - derivative_delta, new_dI + derivative_delta - new_dI*Recovered_rate
 
@@ -112,20 +93,44 @@ def calculate_derivative_for_gov(dS, dI, I, S, Recovered_rate, beta, d, v, group
 
     for p in range(groups):
         for i in range(groups):
-            derivative_delta[p] += beta * d[p, i] * (v**2 * (dI[i]*(S[p]) + I[i]*dS[p]) + 2*v*(I[i] * S[p]))
+            derivative_delta[p] += beta * d[p, i] * (v**2 * (dI[i]*(S[p]) + I[i]*dS[p]) + 2*v*(I[i] * S[p]))[0]
     return new_dS - derivative_delta, new_dI + derivative_delta - new_dI*Recovered_rate
 
 
-'''outer['beta']*outer['d'][p,w]*(v[p]*v[w]*(dI[w,i]*S[p] + I[w]*dS[p,i]) + v[indx]*I[w]*S[p]*diag)
+'''
 
 
 
 
-a = outer['d'] * v[itr] * v[itr].T
+a =  beta * d * v[itr] * v[itr].T
 b = a * S
 c = a * I.reshape(T, 1, groups)
-d = S * I.reshape(T, 1, groups)
-e = np.broadcast_to(d, [groups] + list(d.shape))
+f = S * I.reshape(T, 1, groups)
+e = np.broadcast_to(f[:, np.newaxis], list(f.shape) + [groups]).T.copy()
+
+indices = np.indices((groups, groups, groups))
+unequal_index = (indices[2]!=indices[1]) & (indices[2]!=indices[0])
+e[unequal_index] = 0
+
+all_equal_index = (indices[0]==indices[2]) & (indices[1]==indices[2])
+e[all_equal_index] = e[all_equal_index]*2*v[itr]
+
+same_player_derivative_with_other_group_interaction_index = (indices[2]==indices[1]) & (indices[2]!=indices[0])
+e[same_player_derivative_with_other_group_interaction_index] = e[same_player_derivative_with_other_group_interaction_index
+]*(same_player_derivative_with_other_group_interaction_index*v[itr].T
+  )[same_player_derivative_with_other_group_interaction_index, np.newaxis]
+
+else_index = ~(unequal_index | all_equal_index | same_player_derivative_with_other_group_interaction_index)
+e[else_index] = e[else_index]*(else_index*v[itr])[else_index, np.newaxis]
+
+e = e.sum(axis=0).T
+
+for i in range(e.shape[0]):
+    
+
+
+
+outer['beta']*outer['d'][p,w]*(v[p]*v[w]*(dI[w,i]*S[p] + I[w]*dS[p,i]) + v[indx]*I[w]*S[p]*diag)
 shape = e.shape
 N = shape[0]
 e = e.flatten()

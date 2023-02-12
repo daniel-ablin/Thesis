@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0813a3f5-f3e8-4bae-a329-b3b638fb3289" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Book1.xlsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test analysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_run_2022-09-20_20_206.pickle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_run_2022-09-21_20_999.pickle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_run_2022-10-06_20_999.pickle" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/func.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/func.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -199,6 +204,10 @@
       <workItem from="1672593789721" duration="18470000" />
       <workItem from="1672825410262" duration="14881000" />
       <workItem from="1673764010496" duration="21786000" />
+      <workItem from="1674110072784" duration="29811000" />
+      <workItem from="1675145918815" duration="641000" />
+      <workItem from="1675667327922" duration="5177000" />
+      <workItem from="1676032768608" duration="5606000" />
     </task>
     <servers />
   </component>
@@ -227,13 +236,13 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="itr &gt; 3000" language="Python" />
           <url>file://$PROJECT_DIR$/utils/func.py</url>
-          <line>133</line>
+          <line>137</line>
           <option name="timeStamp" value="296" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>23</line>
-          <option name="timeStamp" value="300" />
+          <url>file://$PROJECT_DIR$/utils/func.py</url>
+          <line>122</line>
+          <option name="timeStamp" value="309" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -241,7 +250,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Thesis$main2.coverage" NAME="main2 Coverage Results" MODIFIED="1672594645589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$from_full_to_nan_groups_connection.coverage" NAME="from_full_to_nan_groups_connection Coverage Results" MODIFIED="1673158851878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Thesis$main.coverage" NAME="main Coverage Results" MODIFIED="1674072183193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$main.coverage" NAME="main Coverage Results" MODIFIED="1676032803818" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$init_params.coverage" NAME="init_params Coverage Results" MODIFIED="1671646033271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
   </component>
 </project>

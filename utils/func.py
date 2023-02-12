@@ -17,15 +17,18 @@ def infected(I, S, v, beta, d):
 const = -2
 
 def calc_total_cost(l, groups, S, v, elasticity_adjust):
-    return l.reshape(groups, 1) * S**const + 1 / v ** elasticity_adjust + elasticity_adjust * v - elasticity_adjust - 1
+    return l.reshape(groups, 1) * S ** const + 1 / v ** elasticity_adjust + elasticity_adjust * v - elasticity_adjust - 1
+    #return l.reshape(groups, 1) * (1-S) + 1 / v**elasticity_adjust - 1
 
 
 def calc_dtotal_cost(l, groups, dS_agg, S, dCost):
     return l.reshape(groups, 1) * const * dS_agg * S**(const-1) + dCost
+    #return l.reshape(groups, 1) * -dS_agg + dCost
 
 
 def calc_dcost(v, elasticity_adjust):
     return -elasticity_adjust / (v ** (elasticity_adjust + 1)) + elasticity_adjust
+    #return -elasticity_adjust / (v ** (elasticity_adjust + 1))
 
 
 def calc_condition_for_learning_rate_adjust(dTotalCost, gov):
@@ -95,6 +98,7 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
     min_v = epsilon
     groups = d.shape[0]
     counter = 0
+    populations_proportions = (d[0, :] / d[:, 0]).reshape(-1, 1)
 
     v, TotalCost, dTotalCost, dS, dI, I, S = init_params(max_itr, T, groups, gov, one_v_for_all)
 
@@ -116,7 +120,7 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
         TotalCost[itr] = calc_total_cost(l, groups, S[T - 1], v[itr], elasticity_adjust)
         dTotalCost[itr] = calc_dtotal_cost(l, groups, dS_agg, S[T-1], dCost)
         if gov:
-            grad = np.nan_to_num(dTotalCost[itr], posinf=1/learning_rate, neginf=-1/learning_rate).sum()
+            grad = (np.nan_to_num(dTotalCost[itr], posinf=1/learning_rate, neginf=-1/learning_rate) * populations_proportions).sum()
         else:
             grad = dTotalCost[itr]
 
@@ -164,25 +168,28 @@ def optimize(T, I0, outer, gov=False, one_v_for_all=False, learning_rate=.01, ma
 
         test_results['solution'] = (sol < 0).all()
 
-    return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr], 'msg': msg, 'test_results': test_results,
-            'S': S[T-1]}
+    return {'v': v[itr], 'v_der': dTotalCost[itr], 'cost': TotalCost[itr] * populations_proportions, 'msg': msg,
+            'test_results': test_results, 'S': S[T-1]}
 
 
 def get_d_matrix(groups):
     base_d = pd.read_csv('d_params.csv', header=None).to_numpy()
-    base_d = base_d / base_d.sum(axis=0)
+    age_groups = np.arange(5, 85, 5)
     if groups == 2:
         groups = [10]
     if isinstance(groups, list):
         d_row_split = np.split(base_d, groups)
         d_full_split = [np.split(row_split, groups, axis=1) for row_split in d_row_split]
+        split_age = np.split(age_groups, groups)
         d = np.array([[split.sum(axis=0).mean() for split in row_split] for row_split in d_full_split]).T
     else:
         d_row_split = np.array_split(base_d, groups)
         d_full_split = [np.array_split(row_split, groups, axis=1) for row_split in d_row_split]
+        split_age = np.array_split(age_groups, groups)
         d = np.array([[split.sum(axis=0).mean() for split in row_split] for row_split in d_full_split]).T
 
-    return d
+    mean_age = np.array([np.insert(split, 0, split[0] - 5).mean() for split in split_age])
+    return d, mean_age
 
 
 def optimize_test(T, I0, d, l, beta, gov=False, one_v_for_all=False, learning_rate=.01, max_itr=10000, epsilon=10**-8,

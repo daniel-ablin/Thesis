@@ -1,5 +1,5 @@
 import numpy as np
-from utils.func import optimize, get_d_matrix
+from utils.optimizer import optimize, get_d_matrix
 import pandas as pd
 from timeit import default_timer as timer
 from datetime import date

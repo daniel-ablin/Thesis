@@ -6,6 +6,8 @@ from datetime import date
 from multiprocessing import Pool
 import itertools
 
+from utils.risk_initializer import RiskInitializer
+
 
 def age_to_risk_exponential_func(base, ratio, age, exponent=6):
     return base*((ratio-1)*(age/100)**exponent + 1)
@@ -23,7 +25,7 @@ def run_model_random_search(itr):
     temp = age_to_risk_exponential_func(a, b, mean_age)
     outer = {'beta': 0.3/12.5,
              'd': d,
-             'l': temp # np.cumsum(temp)
+             'l': RiskInitializer(seed=41).age_to_risk_exponential_func(mean_age, 1) #temp # np.cumsum(temp)
              }
     Recovered_rate = 1 / 10
 
@@ -61,7 +63,7 @@ stop_itr = 35
 Threshold = 10 ** -6
 seed = 129
 rnd = np.random.default_rng(seed)
-groups = 4
+groups = 2
 d, mean_age = get_d_matrix(groups)
 
 I0 = 1/100000
@@ -73,7 +75,7 @@ if __name__ == '__main__':
     columns = ['T', 'I0', 'd', 'l', 'contagiousness', 'sol', 'sol_gov',
                'sol_sec', 'time']
 
-    #run_model_random_search(2)
+    a = run_model_random_search(2)
 
     with Pool(processes=10) as pool:
         data_list = pool.map(run_model_random_search, range(rng))

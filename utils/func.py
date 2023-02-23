@@ -4,7 +4,6 @@ from tqdm import tqdm
 from numba import jit, njit
 from math import floor
 from utils.calculate_derevative import calculate_derivative
-from utils.utils import adam_optimizer_iteration
 
 
 #@njit

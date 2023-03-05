@@ -7,7 +7,7 @@ from utils.risk_initializer import RiskInitializer
 from utils.utils import get_d_matrix
 from utils.run_simulations import run_full_simulation
 
-groups = 2
+groups = 3
 beta = 0.3/12.5
 d, mean_age, norm_factor = get_d_matrix(groups, norm_to_one_meeting=True)
 T = int(1.5 * 365 * norm_factor)

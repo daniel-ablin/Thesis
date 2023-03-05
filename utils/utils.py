@@ -51,8 +51,8 @@ def get_d_matrix(groups, norm_to_one_meeting=False):
     return d, mean_age, norm_factor
 
 
-def refactor_d_for_SI_simulation(d):
-    d_base = d.sum(axis=1) / 2
+def refactor_d_for_SI_simulation(d, fact=2):
+    d_base = np.ones(d.shape[0])  # d.sum(axis=1) / fact
     d.fill(0)
     np.fill_diagonal(d, d_base)
     d_update_rule = np.ones(d.shape) * d_base
@@ -69,3 +69,7 @@ def calc_diag(p, i, w):
         return 1, w
     else:
         return 1, p
+
+
+def get_populations_proportions(d: np.ndarray):
+    return np.nan_to_num((d[0, :] / d[:, 0]), 0).reshape(-1, 1)

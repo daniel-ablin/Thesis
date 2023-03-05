@@ -5,14 +5,15 @@ from utils.cost_calculator import CostCalculator
 from utils.data_classes import DynamicsVariables, CostVariables, ModelOuterVariables
 from utils.model_types import ModelsTypes
 from utils.models_type_funcs import get_model_funcs
-from utils.utils import update_v, break_condition_test
+from utils.utils import update_v, break_condition_test, get_populations_proportions
 from utils.counter import LearningRateCounter
 
 
 class ModelOptimizer:
     def __init__(self, groups, T, beta, d, risk_l, model_type: ModelsTypes, recovered_rate=0,
-                 I0=1/100000, max_itr=10000, filter_elasticity=1/8):
-        populations_proportions = np.nan_to_num((d[0, :] / d[:, 0]), 0).reshape(-1, 1)
+                 I0=1/100000, max_itr=10000, filter_elasticity=1/8, populations_proportions=None):
+        if populations_proportions is None:
+            populations_proportions = get_populations_proportions(d)
         elasticity_adjust = 1 / filter_elasticity
         self.model_outer_vars = ModelOuterVariables(groups, T, beta, recovered_rate, I0, elasticity_adjust, d,
                                                     populations_proportions, risk_l)
@@ -99,6 +100,7 @@ class ModelOptimizer:
 
         sol = dict(v=self.v[itr], v_der=self.cost.dTotalCost[itr],
                    cost=self.cost.TotalCost[itr] * self.model_outer_vars.populations_proportions, msg=msg,
-                   test_results=self.test_results, S=self.dynamics.S[final_dynamics_index])
+                   test_results=self.test_results, S=self.dynamics.S[final_dynamics_index],
+                   I=self.dynamics.I[final_dynamics_index])
 
         return self.test_results, msg, sol

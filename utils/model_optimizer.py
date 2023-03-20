@@ -1,3 +1,5 @@
+from typing import Tuple
+from numpy.typing import NDArray
 import numpy as np
 from tqdm import tqdm
 from copy import deepcopy
@@ -5,15 +7,13 @@ from utils.cost_calculator import CostCalculator
 from utils.data_classes import DynamicsVariables, CostVariables, ModelOuterVariables
 from utils.model_types import ModelsTypes
 from utils.models_type_funcs import get_model_funcs
-from utils.utils import update_v, break_condition_test, get_populations_proportions
+from utils.utils import update_v, break_condition_test
 from utils.counter import LearningRateCounter
 
 
 class ModelOptimizer:
-    def __init__(self, groups, T, beta, d, risk_l, model_type: ModelsTypes, recovered_rate=0,
-                 I0=1/100000, max_itr=10000, filter_elasticity=1/8, populations_proportions=None):
-        if populations_proportions is None:
-            populations_proportions = get_populations_proportions(d)
+    def __init__(self, groups: int, T: int, beta: NDArray[float], d: NDArray[float], risk_l: NDArray[float], model_type: ModelsTypes, recovered_rate=0,
+                 I0=1/100000, max_itr=10000, filter_elasticity=1/8, populations_proportions: NDArray[float] = np.array([1])):
         elasticity_adjust = 1 / filter_elasticity
         self.model_outer_vars = ModelOuterVariables(groups, T, beta, recovered_rate, I0, elasticity_adjust, d,
                                                     populations_proportions, risk_l)
@@ -34,14 +34,14 @@ class ModelOptimizer:
 
         self.learning_rate_counter = LearningRateCounter(5)
 
-    def infected(self, I, S, v):
+    def infected(self, I: NDArray[float], S: NDArray[float], v: NDArray[float]) -> NDArray[float]:
         d = self.model_outer_vars.d
         beta = self.model_outer_vars.beta
-        new_I = (beta * d * v * v.T * S.reshape((d.shape[0], 1)) * I.reshape((1, d.shape[0]))).sum(axis=1)
+        new_I = (beta[:, np.newaxis] * d * v * v.T * S.reshape((d.shape[0], 1)) * I.reshape((1, d.shape[0]))).sum(axis=1)
 
         return np.expand_dims(new_I, -1)
 
-    def calculate_dynamic(self, v, dynamics: DynamicsVariables, calculate_derivative=True):
+    def calculate_dynamic(self, v: NDArray[float], dynamics: DynamicsVariables, calculate_derivative: bool = True) -> NDArray[float]:
         dS_agg = 0
         I = dynamics.I
         S = dynamics.S
@@ -56,7 +56,7 @@ class ModelOptimizer:
 
         return dS_agg
 
-    def final_solution_test(self, epsilon, itr):
+    def final_solution_test(self, epsilon: float, itr: int) -> bool:
 
         dynamics_for_test = deepcopy(self.dynamics)
         v_for_test, main_player = self.model_funcs.init_v_for_test(self.v[itr], epsilon)
@@ -70,9 +70,12 @@ class ModelOptimizer:
 
         return (cost_gap < 0).all()
 
-    def optimize(self, learning_rate=.01, epsilon=10**-8, stop_itr=50, threshold=10**-6):
+    def optimize(self, learning_rate=.01, epsilon=10**-8, stop_itr=50, threshold=10**-6) -> Tuple[bool, str, dict]:
         self.learning_rate_counter.restart_counter()
         final_dynamics_index = self.model_outer_vars.T-1
+        msg = 'time out'
+        itr = None
+        dS_agg = None
         pbar = tqdm(range(self.max_itr))
         for itr in pbar:
 
@@ -101,6 +104,6 @@ class ModelOptimizer:
         sol = dict(v=self.v[itr], v_der=self.cost.dTotalCost[itr],
                    cost=self.cost.TotalCost[itr] * self.model_outer_vars.populations_proportions, msg=msg,
                    test_results=self.test_results, S=self.dynamics.S[final_dynamics_index],
-                   I=self.dynamics.I[final_dynamics_index])
+                   I=self.dynamics.I[final_dynamics_index], dS_agg=dS_agg)
 
         return self.test_results, msg, sol

@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from typing import Tuple
 
 
-def update_v(v, grad, learning_rate, epsilon):
+def update_v(v: NDArray[float], grad: NDArray[float], learning_rate: NDArray[float], epsilon: float) -> NDArray[float]:
     decent = grad * learning_rate
     decent = np.minimum(abs(decent), 0.01) * np.sign(decent)
 
@@ -12,7 +14,8 @@ def update_v(v, grad, learning_rate, epsilon):
     return v_new
 
 
-def break_condition_test(dTotalCost, itr, stop_itr, threshold, grad, epsilon, v):
+def break_condition_test(dTotalCost: NDArray[float], itr: int, stop_itr: int, threshold: float, grad: NDArray[float], epsilon: float,
+                         v: NDArray[float]) -> Tuple[bool, str]:
     if not itr == 0 and itr % stop_itr == 0:
         if (abs((dTotalCost[itr - stop_itr - 1:itr - 1].sum(axis=0) - dTotalCost[itr] * stop_itr)) < threshold).all():
             if (abs(grad) < threshold).all():
@@ -26,7 +29,7 @@ def break_condition_test(dTotalCost, itr, stop_itr, threshold, grad, epsilon, v)
     return False, msg
 
 
-def get_d_matrix(groups, norm_to_one_meeting=False):
+def get_d_matrix(groups: int, norm_to_one_meeting: bool = False) -> Tuple[NDArray[float], NDArray[float], float]:
     base_d = pd.read_csv('d_params.csv', header=None).to_numpy()
     age_groups = np.arange(5, 85, 5)
     if groups == 2:
@@ -51,8 +54,8 @@ def get_d_matrix(groups, norm_to_one_meeting=False):
     return d, mean_age, norm_factor
 
 
-def refactor_d_for_SI_simulation(d, fact=2):
-    d_base = np.ones(d.shape[0])  # d.sum(axis=1) / fact
+def refactor_d_for_SI_simulation(d, fact=2) -> Tuple[NDArray[float], NDArray[float]]:
+    d_base = d.sum(axis=1) / fact  # np.ones(d.shape[0])
     d.fill(0)
     np.fill_diagonal(d, d_base)
     d_update_rule = np.ones(d.shape) * d_base
@@ -60,7 +63,7 @@ def refactor_d_for_SI_simulation(d, fact=2):
     return d, d_update_rule
 
 
-def calc_diag(p, i, w):
+def calc_diag(p: int, i: int, w: int) -> Tuple[int, int]:
     if p == i and p == w:
         return 2, p
     elif p != i and i != w:
@@ -71,5 +74,12 @@ def calc_diag(p, i, w):
         return 1, p
 
 
-def get_populations_proportions(d: np.ndarray):
-    return np.nan_to_num((d[0, :] / d[:, 0]), 0).reshape(-1, 1)
+def get_populations_proportions(d: NDArray[float]) -> NDArray[float]:
+    return np.nan_to_num((d[0, :] / d[:, 0]), nan=0).reshape(-1, 1)
+
+
+def norm_d_to_one(d: NDArray[float], beta: float) -> Tuple[NDArray[float], NDArray[float]]:
+    factor = d.sum(axis=1)
+    d = d/factor[:, np.newaxis]
+    beta = beta*factor
+    return d, beta

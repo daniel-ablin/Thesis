@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import dataclass
 import numpy as np
+from numpy.typing import NDArray
 
 
 class ModelVariable:
@@ -11,10 +12,10 @@ class ModelVariable:
         else:
             self.gov = deepcopy(anarchy)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int) -> 'ModelVariable':
         return ModelVariable(self.anarchy[item], self.gov[item])
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: 'ModelVariable'):
         self.gov[key] = value.gov
         self.anarchy[key] = value.anarchy
 
@@ -23,7 +24,7 @@ class ModelVariable:
         self.gov[starting_index] = starting_value
 
     @staticmethod
-    def activate_function(func, *args):
+    def activate_function(func, *args) -> 'ModelVariable':
         anarchy_args = (arg.anarchy for arg in args)
         gov_args = (arg.gov for arg in args)
         return ModelVariable(func(*anarchy_args), func(*gov_args))
@@ -36,7 +37,7 @@ class DynamicsVariables:
     dS: np.ndarray
     dI: np.ndarray
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int) -> 'DynamicsVariables':
         return DynamicsVariables(I=self.I[item], S=self.S[item], dS=self.dS[item], dI=self.dI[item])
 
 
@@ -45,10 +46,10 @@ class CostVariables:
     TotalCost: np.ndarray
     dTotalCost: np.ndarray
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int) -> 'CostVariables':
         return CostVariables(TotalCost=self.TotalCost[item], dTotalCost=self.dTotalCost[item])
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: 'CostVariables'):
         self.TotalCost[key] = value.TotalCost
         self.dTotalCost[key] = value.dTotalCost
 
@@ -57,10 +58,10 @@ class CostVariables:
 class ModelOuterVariables:
     groups: int
     T: int
-    beta: float
+    beta: NDArray[float]
     recovered_rate: float
     I0: float
     elasticity_adjust: float
-    d: np.ndarray
-    populations_proportions: np.ndarray
-    risk_l: np.ndarray
+    d: NDArray[float]
+    populations_proportions: NDArray[float]
+    risk_l: NDArray[float]

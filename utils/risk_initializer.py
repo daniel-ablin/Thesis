@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 
 
 class RiskInitializer:
@@ -8,7 +9,7 @@ class RiskInitializer:
         self.max_base = max_base
         self.exponent = exponent
 
-    def age_to_risk_exponential_func(self, age, size=1):
+    def age_to_risk_exponential_func(self, age: NDArray[float], size=1) -> NDArray[float]:
         base = self.rnd.uniform(0, self.max_base, size=(size, 1))
         ratio = self.rnd.uniform(0, self.max_ratio, size=(size, 1))
         return base * ((ratio - 1) * (age / 100) ** self.exponent + 1)

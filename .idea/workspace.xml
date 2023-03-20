@@ -2,14 +2,39 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0813a3f5-f3e8-4bae-a329-b3b638fb3289" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/Thesis.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Thesis.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Book1.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test analysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_run_2022-09-20_20_206.pickle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_run_2022-09-21_20_999.pickle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_run_2022-10-06_20_999.pickle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/func.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/func.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Book2.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SIR_simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/SIR_simulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SI_simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/SI_simulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/from_full_to_nan_groups_connection.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/recursive_model.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/recursive_model_func.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/results_analisys/test analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/results_analisys/test analysis.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test analysis_si.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test analysis_si.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/calculate_derevative.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/calculate_dinamics.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/cost_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/cost_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/counter.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/counter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/data_classes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/data_classes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/data_objects.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/derivative_calculator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/func.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/funcs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/grad_calculator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/init_params.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/model_optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/model_optimizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/models_type_funcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/models_type_funcs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/optimizer_init_params.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/risk_initializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/risk_initializer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/run_simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/run_simulations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/solution_tester.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/~$Book2.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,20 +62,15 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/utils/calculate_derevative.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/utils/func.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$USER_HOME$/opt/anaconda3/lib/python3.9/multiprocessing/pool.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$USER_HOME$/opt/anaconda3/lib/python3.9/site-packages/numpy/core/_methods.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$USER_HOME$/opt/anaconda3/lib/python3.9/site-packages/numpy/lib/shape_base.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$USER_HOME$/opt/anaconda3/lib/python3.9/site-packages/tqdm/std.py" root0="SKIP_INSPECTION" />
-  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectId" id="2DD82di8MwCMImaKX5KSFUlHs0a" />
   <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
@@ -72,8 +92,8 @@
       <recent name="$PROJECT_DIR$/utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
-    <configuration name="from_full_to_nan_groups_connection" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.SIR_simulation">
+    <configuration name="SIR_simulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -86,7 +106,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/from_full_to_nan_groups_connection.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SIR_simulation.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -95,29 +115,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="init_params" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Thesis" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/init_params.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="SI_simulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -130,29 +128,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="main2" type="PythonConfigurationType" factoryName="Python">
-      <module name="Thesis" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="$USER_HOME$/opt/anaconda3/bin/python3" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SI_simulation.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -162,16 +138,13 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.main2" />
-      <item itemvalue="Python.from_full_to_nan_groups_connection" />
-      <item itemvalue="Python.init_params" />
-      <item itemvalue="Python.main" />
+      <item itemvalue="Python.SI_simulation" />
+      <item itemvalue="Python.SIR_simulation" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main" />
-        <item itemvalue="Python.from_full_to_nan_groups_connection" />
-        <item itemvalue="Python.init_params" />
+        <item itemvalue="Python.SIR_simulation" />
+        <item itemvalue="Python.SI_simulation" />
       </list>
     </recent_temporary>
   </component>
@@ -208,6 +181,25 @@
       <workItem from="1675145918815" duration="641000" />
       <workItem from="1675667327922" duration="5177000" />
       <workItem from="1676032768608" duration="5606000" />
+      <workItem from="1676830183611" duration="6857000" />
+      <workItem from="1676970774021" duration="3042000" />
+      <workItem from="1677170008708" duration="2663000" />
+      <workItem from="1677188288382" duration="12123000" />
+      <workItem from="1677421571455" duration="2994000" />
+      <workItem from="1677607970210" duration="4828000" />
+      <workItem from="1677997543211" duration="1088000" />
+      <workItem from="1678037328740" duration="4746000" />
+      <workItem from="1678136825330" duration="3987000" />
+      <workItem from="1678171286083" duration="14000" />
+      <workItem from="1678301993942" duration="1769000" />
+      <workItem from="1678303782388" duration="987000" />
+      <workItem from="1678571598789" duration="15129000" />
+      <workItem from="1678735806244" duration="823000" />
+      <workItem from="1678860880509" duration="4393000" />
+      <workItem from="1679206370036" duration="4937000" />
+      <workItem from="1679297677509" duration="3577000" />
+      <workItem from="1679332226961" duration="1735000" />
+      <workItem from="1679336310889" duration="767000" />
     </task>
     <servers />
   </component>
@@ -229,28 +221,31 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/from_full_to_nan_groups_connection.py</url>
-          <line>91</line>
-          <option name="timeStamp" value="254" />
+          <url>file://$PROJECT_DIR$/SI_simulation.py</url>
+          <line>13</line>
+          <option name="timeStamp" value="345" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <condition expression="itr &gt; 3000" language="Python" />
-          <url>file://$PROJECT_DIR$/utils/func.py</url>
-          <line>137</line>
-          <option name="timeStamp" value="296" />
+          <url>file://$PROJECT_DIR$/utils/run_simulations.py</url>
+          <line>40</line>
+          <option name="timeStamp" value="346" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/func.py</url>
-          <line>122</line>
-          <option name="timeStamp" value="309" />
+        <line-breakpoint enabled="true" suspend="THREAD" type="jupyter-line">
+          <url>notebook:///Users/danielablin/Documents/GitHub/Thesis/test analysis.ipynb</url>
+          <line>130</line>
+          <option name="timeStamp" value="339" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Thesis$main2.coverage" NAME="main2 Coverage Results" MODIFIED="1672594645589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$test.coverage" NAME="test Coverage Results" MODIFIED="1676358266188" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/Thesis$from_full_to_nan_groups_connection.coverage" NAME="from_full_to_nan_groups_connection Coverage Results" MODIFIED="1673158851878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Thesis$main.coverage" NAME="main Coverage Results" MODIFIED="1676032803818" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$main2.coverage" NAME="main2 Coverage Results" MODIFIED="1676962666872" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$SIR_simulation__1_.coverage" NAME="SIR_simulation (1) Coverage Results" MODIFIED="1679332481857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$main.coverage" NAME="main Coverage Results" MODIFIED="1677323504500" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$SI_simulation.coverage" NAME="SI_simulation Coverage Results" MODIFIED="1679332774766" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$SIR_simulation.coverage" NAME="SIR_simulation Coverage Results" MODIFIED="1679337059791" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$init_params.coverage" NAME="init_params Coverage Results" MODIFIED="1671646033271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
   </component>
 </project>

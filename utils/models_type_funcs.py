@@ -2,6 +2,8 @@ import numpy as np
 from utils.model_types import ModelsTypes
 from utils.data_classes import CostVariables, ModelOuterVariables, DynamicsVariables
 from utils.utils import calc_diag
+from numpy.typing import NDArray
+from typing import Tuple, Optional
 
 
 class ModelFuncs:
@@ -9,25 +11,29 @@ class ModelFuncs:
         self.outer_variables = outer_variables
         self.type = model_type
 
-    def init_params(self):
+    def init_params(self, max_itr: int) -> Tuple[NDArray[float], NDArray[float], NDArray[float], NDArray[float],
+                                                 NDArray[float], NDArray[float], NDArray[float]]:
         pass
 
-    def get_grad(self):
+    def calculate_grad(self, cost: CostVariables, itr: int, learning_rate: float) -> NDArray[float]:
         pass
 
-    def calculate_derivative(self):
+    def calculate_derivative(self, dynamics: DynamicsVariables, v: NDArray[float]) -> Tuple[NDArray[float], NDArray[float], NDArray[float]]:
         pass
 
-    def calc_condition_for_learning_rate_adjust(self):
+    @staticmethod
+    def calc_condition_for_learning_rate_adjust(dTotalCost: NDArray[float]) -> NDArray[float]:
         pass
 
-    def init_v_for_test(self):
+    @staticmethod
+    def init_v_for_test(v: NDArray[float], epsilon: float) -> Tuple[NDArray[float], Optional[int]]:
         pass
 
-    def total_cost_for_test(self):
+    @staticmethod
+    def total_cost_for_test(TotalCost: NDArray[float], TotalCost_test: NDArray[float], main_player: Optional[int]) -> float:
         pass
 
-    def init_common_params(self, max_itr):
+    def init_common_params(self, max_itr: int) -> Tuple[NDArray[float], NDArray[float], NDArray[float], NDArray[float]]:
         dTotalCost = np.zeros((max_itr, self.outer_variables.groups, 1))
         TotalCost = np.zeros((max_itr, self.outer_variables.groups, 1))
 
@@ -48,13 +54,13 @@ class GovModelFuncs(ModelFuncs):
 
         return v, dS, dI, *self.init_common_params(max_itr)
 
-    def calculate_grad(self, cost: CostVariables, itr, learning_rate):
+    def calculate_grad(self, cost, itr, learning_rate):
         grad = (np.nan_to_num(cost.dTotalCost[itr], posinf=1 / learning_rate,
                               neginf=-1 / learning_rate) * self.outer_variables.populations_proportions).sum()
 
         return grad
 
-    def calculate_derivative(self, dynamics: DynamicsVariables, v):
+    def calculate_derivative(self, dynamics, v):
         dI = dynamics.dI
         dS = dynamics.dS
         S = dynamics.S
@@ -68,7 +74,7 @@ class GovModelFuncs(ModelFuncs):
         beta = self.outer_variables.beta
         for p in range(groups):
             for i in range(groups):
-                derivative_delta[p] += beta * d[p, i] * \
+                derivative_delta[p] += beta[p] * d[p, i] * \
                                        (v ** 2 * (dI[i] * (S[p]) + I[i] * dS[p]) + 2 * v * (I[i] * S[p]))[0]
 
         new_dS = new_dS - derivative_delta
@@ -129,7 +135,7 @@ class AnarchyModelFuncs(ModelFuncs):
             for i in range(groups):
                 for w in range(groups):
                     diag, indx = calc_diag(p, i, w)
-                    derivative_delta[p, i] += beta * d[p, w] * (v[p] * v[w] * (dI[w, i] * S[p] + I[w] * dS[p, i]) +
+                    derivative_delta[p, i] += beta[p] * d[p, w] * (v[p] * v[w] * (dI[w, i] * S[p] + I[w] * dS[p, i]) +
                                                                 v[indx] * I[w] * S[p] * diag)[0]
 
         new_dS = new_dS - derivative_delta

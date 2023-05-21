@@ -8,26 +8,18 @@ from utils.utils import get_d_matrix, norm_d_to_one, get_populations_proportions
 from utils.run_simulations import run_full_simulation
 
 groups = 2
-beta = 0.3/12.5
-d, mean_age, norm_factor = get_d_matrix(groups, norm_to_one_meeting=False)
-populations_proportions = get_populations_proportions(d)
-d, beta = norm_d_to_one(d, beta)
+base_d, mean_age, norm_factor = get_d_matrix(groups, norm_to_one_meeting=True)
+populations_proportions = get_populations_proportions(base_d)
 T = int(1.5 * 365 * norm_factor)
 number_of_simulations = 1000
 recovered_rate = 1/10 / norm_factor
+now = datetime.now()
 
 
 if __name__ == '__main__':
-    for base_beta in [.1, .2, .3, .4, .5, .6]:
-        groups = 2
+    for base_beta in [.4, .5, .6, .2, .1, .3]:
         beta = base_beta / 12.5
-        d, mean_age, norm_factor = get_d_matrix(groups, norm_to_one_meeting=False)
-        populations_proportions = get_populations_proportions(d)
-        d, beta = norm_d_to_one(d, beta)
-        T = int(1.5 * 365 * norm_factor)
-        number_of_simulations = 1000
-        recovered_rate = 1 / 10 / norm_factor
-        now = datetime.now()
+        d, beta = norm_d_to_one(base_d, beta)
 
         run_func = partial(run_full_simulation, groups=groups, T=T, beta=beta, recovered_rate=recovered_rate, d=d, populations_proportions=populations_proportions)
 
@@ -40,6 +32,6 @@ if __name__ == '__main__':
 
         data = pd.DataFrame(data_list)
 
-        data.to_pickle(f'test_run_{number_of_simulations}_{groups}_{now}_{base_beta}.pickle')
+        data.to_pickle(f'test_run_{number_of_simulations}_{groups}_{base_beta}_{now}.pickle')
         print('stop')
 

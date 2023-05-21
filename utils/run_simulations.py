@@ -5,6 +5,8 @@ from utils.model_types import ModelsTypes
 import numpy as np
 from numpy.typing import NDArray
 
+from utils.utils import get_populations_proportions
+
 
 def run_full_simulation(risk_l: NDArray[float], groups: int, T: int, beta: NDArray[float], recovered_rate: float, d: NDArray[float],
                         populations_proportions: NDArray[float] = np.ndarray([1])) -> Dict:
@@ -36,6 +38,7 @@ def run_full_SI_simulation(risk_l, groups, T, beta, recovered_rate, d, d_update_
     res_list = []
     d_local = d.copy()
     for i in range(max_itr+1):
+        populations_proportions = get_populations_proportions(d_local)
         res_list.append(run_full_simulation(risk_l, groups, T, beta, recovered_rate, d_local.copy(), populations_proportions=populations_proportions))
 
         d_local += (100 / np.ceil(max_itr*2) / 100) * d_update_rule

@@ -38,7 +38,7 @@ def parse_test(path, groups, extra_cols_to_parse=[]):
     return base
 
 
-def rename_cols(df, factor, group_to_compare):
+def rename_cols(df, factor, group_to_compare, second_factor=None, second_factor_start=None):
     df = df.copy()
 
     max_l_to_compare = df['risk_l_1'].max() * factor
@@ -47,5 +47,9 @@ def rename_cols(df, factor, group_to_compare):
     df['best_sol'] = df['best_sol'].str.replace('cost_sol_gov', 'government')
     df['best_sol'] = df['best_sol'].str.replace('cost_sol', 'equilibrium')
     df.rename({'best_sol': 'Lowest Cost', 'risk_l_1': 'Young Cost of Infection', f'risk_l_{group_to_compare}': 'Old Cost of Infection'}, axis=1, inplace=True)
-    df['factor'] = (df['Young Cost of Infection'] * factor)
+    if second_factor and second_factor_start:
+        df['factor'] = ((df['Young Cost of Infection'] * factor) * (df['Young Cost of Infection'] <= second_factor_start) +
+                        (df['Young Cost of Infection'] * second_factor - second_factor_start*(second_factor - factor)) * (df['Young Cost of Infection'] > second_factor_start))
+    else:
+        df['factor'] = (df['Young Cost of Infection'] * factor)
     return df

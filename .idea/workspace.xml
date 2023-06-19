@@ -2,12 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0813a3f5-f3e8-4bae-a329-b3b638fb3289" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/SI_simulation_diff_beta.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results_analisys/temp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/results_analisys/temp2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SIR_simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/SIR_simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SIR_simulation_diff_beta.py" beforeDir="false" afterPath="$PROJECT_DIR$/SIR_simulation_diff_beta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/results_analisys/test analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/results_analisys/test analysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results_analisys/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/results_analisys/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,30 +63,8 @@
       <recent name="$PROJECT_DIR$/utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.SI_simulation_diff_beta">
+  <component name="RunManager" selected="Python.temp2">
     <configuration name="SIR_simulation (1)" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="Thesis" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SIR_simulation.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="SIR_simulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Thesis" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -176,19 +152,65 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="temp" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/results_analisys" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/results_analisys/temp.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="temp2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Thesis" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/results_analisys" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/results_analisys/temp2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.SIR_simulation (1)" />
+      <item itemvalue="Python.temp2" />
+      <item itemvalue="Python.temp" />
       <item itemvalue="Python.SI_simulation_diff_beta" />
       <item itemvalue="Python.SIR_simulation_diff_beta" />
-      <item itemvalue="Python.SIR_simulation" />
       <item itemvalue="Python.SI_simulation" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.temp2" />
+        <item itemvalue="Python.temp" />
         <item itemvalue="Python.SI_simulation_diff_beta" />
-        <item itemvalue="Python.SIR_simulation_diff_beta" />
-        <item itemvalue="Python.SIR_simulation" />
         <item itemvalue="Python.SI_simulation" />
+        <item itemvalue="Python.SIR_simulation_diff_beta" />
       </list>
     </recent_temporary>
   </component>
@@ -248,7 +270,14 @@
       <workItem from="1684214728524" duration="2852000" />
       <workItem from="1684253180140" duration="1100000" />
       <workItem from="1684573557822" duration="731000" />
-      <workItem from="1684574364712" duration="8361000" />
+      <workItem from="1684574364712" duration="16613000" />
+      <workItem from="1684732415338" duration="34000" />
+      <workItem from="1684732545918" duration="1280000" />
+      <workItem from="1684855841900" duration="2564000" />
+      <workItem from="1685976704333" duration="1000" />
+      <workItem from="1686632849558" duration="761000" />
+      <workItem from="1686633966794" duration="2411000" />
+      <workItem from="1687069252930" duration="1633000" />
     </task>
     <servers />
   </component>
@@ -276,7 +305,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils/run_simulations.py</url>
-          <line>40</line>
+          <line>43</line>
           <option name="timeStamp" value="346" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -285,9 +314,9 @@
           <option name="timeStamp" value="347" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/results_analisys/utils.py</url>
-          <line>49</line>
-          <option name="timeStamp" value="348" />
+          <url>file://$PROJECT_DIR$/SI_simulation_diff_beta.py</url>
+          <line>13</line>
+          <option name="timeStamp" value="349" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="jupyter-line">
           <url>notebook:///Users/danielablin/Documents/GitHub/Thesis/test analysis.ipynb</url>
@@ -298,13 +327,15 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Thesis$temp2.coverage" NAME="temp2 Coverage Results" MODIFIED="1687086715012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/results_analisys" />
     <SUITE FILE_PATH="coverage/Thesis$test.coverage" NAME="test Coverage Results" MODIFIED="1676358266188" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
-    <SUITE FILE_PATH="coverage/Thesis$SI_simulation_diff_beta.coverage" NAME="SI_simulation_diff_beta Coverage Results" MODIFIED="1684590139770" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$SI_simulation_diff_beta.coverage" NAME="SI_simulation_diff_beta Coverage Results" MODIFIED="1684732618230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$from_full_to_nan_groups_connection.coverage" NAME="from_full_to_nan_groups_connection Coverage Results" MODIFIED="1673158851878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$main2.coverage" NAME="main2 Coverage Results" MODIFIED="1676962666872" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$temp.coverage" NAME="temp Coverage Results" MODIFIED="1687086291786" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/results_analisys" />
     <SUITE FILE_PATH="coverage/Thesis$SIR_simulation__1_.coverage" NAME="SIR_simulation (1) Coverage Results" MODIFIED="1684215187149" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$main.coverage" NAME="main Coverage Results" MODIFIED="1677323504500" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Thesis$SI_simulation.coverage" NAME="SI_simulation Coverage Results" MODIFIED="1679332774766" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Thesis$SI_simulation.coverage" NAME="SI_simulation Coverage Results" MODIFIED="1684685951661" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$SIR_simulation.coverage" NAME="SIR_simulation Coverage Results" MODIFIED="1684006845149" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$SIR_simulation_diff_beta.coverage" NAME="SIR_simulation_diff_beta Coverage Results" MODIFIED="1684589955874" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Thesis$init_params.coverage" NAME="init_params Coverage Results" MODIFIED="1671646033271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
